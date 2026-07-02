@@ -76,3 +76,64 @@ class KnowledgeGraph(BaseModel, frozen=True):
         return self.model_copy(
             update={"evidence": {k: v for k, v in self.evidence.items() if k != evidence_id}}
         )
+
+    def update_entity(self, entity: Entity) -> "KnowledgeGraph":
+        return self.add_entity(entity)
+
+    def update_concept(self, concept: Concept) -> "KnowledgeGraph":
+        return self.add_concept(concept)
+
+    def update_fact(self, fact: Fact) -> "KnowledgeGraph":
+        return self.add_fact(fact)
+
+    def update_relationship(self, relationship: Relationship) -> "KnowledgeGraph":
+        return self.add_relationship(relationship)
+
+    def update_evidence(self, evidence: Evidence) -> "KnowledgeGraph":
+        return self.add_evidence(evidence)
+
+    def merge(self, other: "KnowledgeGraph") -> "KnowledgeGraph":
+        merged = self
+        for e in other.entities.values():
+            merged = merged.add_entity(e)
+        for c in other.concepts.values():
+            merged = merged.add_concept(c)
+        for f in other.facts.values():
+            merged = merged.add_fact(f)
+        for r in other.relationships.values():
+            merged = merged.add_relationship(r)
+        for ev in other.evidence.values():
+            merged = merged.add_evidence(ev)
+        return merged
+
+    @staticmethod
+    def _entity_key(e: Entity) -> tuple[str, str, str]:
+        return (e.id, e.name, str(e.confidence))
+
+    @staticmethod
+    def _relationship_key(r: Relationship) -> tuple[str, str, str, str]:
+        return (r.id, r.source_id, r.target_id, r.relationship_type)
+
+    def diff(self, other: "KnowledgeGraph") -> dict[str, list[str]]:
+        added_entities = [e.id for e in other.entities.values() if e.id not in self.entities]
+        removed_entities = [e.id for e in self.entities.values() if e.id not in other.entities]
+        added_relationships = [
+            r.id for r in other.relationships.values() if r.id not in self.relationships
+        ]
+        removed_relationships = [
+            r.id for r in self.relationships.values() if r.id not in other.relationships
+        ]
+        added_facts = [f.id for f in other.facts.values() if f.id not in self.facts]
+        removed_facts = [f.id for f in self.facts.values() if f.id not in other.facts]
+        added_concepts = [c.id for c in other.concepts.values() if c.id not in self.concepts]
+        removed_concepts = [c.id for c in self.concepts.values() if c.id not in other.concepts]
+        return {
+            "entities_added": added_entities,
+            "entities_removed": removed_entities,
+            "concepts_added": added_concepts,
+            "concepts_removed": removed_concepts,
+            "facts_added": added_facts,
+            "facts_removed": removed_facts,
+            "relationships_added": added_relationships,
+            "relationships_removed": removed_relationships,
+        }
