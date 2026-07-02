@@ -44,3 +44,29 @@
 - Add OntologyValidationPass for relationship type and taxonomy validation
 - Add EvidenceValidationPass for provenance and coverage checks
 - Add verification pipeline integration tests
+
+### Milestone 7 — Verification Engine
+
+- `0089194` Update package exports and add comprehensive tests
+- `f3baa2b` Add public SDK, CLI, and extension system
+- `8e11015` Add Verification Engine with converge loop
+- `68711f5` Add automatic repair passes for knowledge graphs
+- `d600114` Add consistency validation and quality scoring passes
+- `05ff309` Add schema and structural validation passes
+- `ec03862` Add KnowledgeGraph merge/diff methods and new exception types
+
+### Milestone 7 — Verification Engine (details)
+
+- SchemaValidationPass: required fields, valid IDs, duplicate detection
+- StructuralValidationPass: orphaned relationship refs, evidence refs, duplicates
+- ConsistencyValidationPass: contradictory facts, conflicting descriptions
+- ScoringPass + KnowledgeScore: 5 quality dimensions with weighted overall score
+- 4 repair passes: MergeDuplicateEntities, AttachProvenance, FixEvidenceRefs, NormalizeConfidence
+- VerificationEngine: iterative converge loop with quality threshold
+- VerificationResult: final graph, scores, diagnostics, repair metadata
+- Knowledge class: create from text/file, read OKF documents, update with content
+- OKFDocument: save, verify, inspect, score, diff, merge, update, delete
+- CLI: 7 commands (create, read, update, verify, inspect, score, diff)
+- Extension system: ExtensionRegistry with entry point discovery
+- 5 new exception types for structured error handling
+- 5 new test modules (53 tests) — all 243 passing, ruff/mypy clean
