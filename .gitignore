@@ -8,3 +8,4 @@ build/
 *.egg
 .DS_Store
 site/
+SPEC.md
