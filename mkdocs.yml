@@ -12,8 +12,10 @@ theme:
 
 nav:
   - Home: index.md
+  - User Guide: user_guide.md
   - Architecture: architecture.md
   - API Reference: api.md
+  - Plugin Guide: plugin_guide.md
 
 plugins:
   - search
