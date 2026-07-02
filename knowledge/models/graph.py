@@ -27,19 +27,13 @@ class KnowledgeGraph(BaseModel, frozen=True):
     evidence: dict[str, Evidence] = Field(default_factory=dict)
 
     def add_entity(self, entity: Entity) -> "KnowledgeGraph":
-        return self.model_copy(
-            update={"entities": {**self.entities, entity.id: entity}}
-        )
+        return self.model_copy(update={"entities": {**self.entities, entity.id: entity}})
 
     def add_concept(self, concept: Concept) -> "KnowledgeGraph":
-        return self.model_copy(
-            update={"concepts": {**self.concepts, concept.id: concept}}
-        )
+        return self.model_copy(update={"concepts": {**self.concepts, concept.id: concept}})
 
     def add_fact(self, fact: Fact) -> "KnowledgeGraph":
-        return self.model_copy(
-            update={"facts": {**self.facts, fact.id: fact}}
-        )
+        return self.model_copy(update={"facts": {**self.facts, fact.id: fact}})
 
     def add_relationship(self, relationship: Relationship) -> "KnowledgeGraph":
         return self.model_copy(
@@ -52,51 +46,33 @@ class KnowledgeGraph(BaseModel, frozen=True):
         )
 
     def add_evidence(self, evidence: Evidence) -> "KnowledgeGraph":
-        return self.model_copy(
-            update={"evidence": {**self.evidence, evidence.id: evidence}}
-        )
+        return self.model_copy(update={"evidence": {**self.evidence, evidence.id: evidence}})
 
     def remove_entity(self, entity_id: str) -> "KnowledgeGraph":
         return self.model_copy(
-            update={
-                "entities": {
-                    k: v for k, v in self.entities.items() if k != entity_id
-                }
-            }
+            update={"entities": {k: v for k, v in self.entities.items() if k != entity_id}}
         )
 
     def remove_concept(self, concept_id: str) -> "KnowledgeGraph":
         return self.model_copy(
-            update={
-                "concepts": {
-                    k: v for k, v in self.concepts.items() if k != concept_id
-                }
-            }
+            update={"concepts": {k: v for k, v in self.concepts.items() if k != concept_id}}
         )
 
     def remove_fact(self, fact_id: str) -> "KnowledgeGraph":
         return self.model_copy(
-            update={
-                "facts": {k: v for k, v in self.facts.items() if k != fact_id}
-            }
+            update={"facts": {k: v for k, v in self.facts.items() if k != fact_id}}
         )
 
     def remove_relationship(self, relationship_id: str) -> "KnowledgeGraph":
         return self.model_copy(
             update={
                 "relationships": {
-                    k: v
-                    for k, v in self.relationships.items()
-                    if k != relationship_id
+                    k: v for k, v in self.relationships.items() if k != relationship_id
                 }
             }
         )
 
     def remove_evidence(self, evidence_id: str) -> "KnowledgeGraph":
         return self.model_copy(
-            update={
-                "evidence": {
-                    k: v for k, v in self.evidence.items() if k != evidence_id
-                }
-            }
+            update={"evidence": {k: v for k, v in self.evidence.items() if k != evidence_id}}
         )

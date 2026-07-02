@@ -238,15 +238,11 @@ class TestRelationship:
         assert rel.relationship_type == "depends_on"
 
     def test_default_evidence_refs(self) -> None:
-        rel = Relationship(
-            source_id="a", target_id="b", relationship_type="uses"
-        )
+        rel = Relationship(source_id="a", target_id="b", relationship_type="uses")
         assert rel.evidence_refs == []
 
     def test_immutable(self) -> None:
-        rel = Relationship(
-            source_id="a", target_id="b", relationship_type="uses"
-        )
+        rel = Relationship(source_id="a", target_id="b", relationship_type="uses")
         with pytest.raises(ValidationError):
             rel.relationship_type = "extends"
 
@@ -318,9 +314,7 @@ class TestKnowledgeGraph:
 
     def test_add_relationship(self) -> None:
         graph = KnowledgeGraph()
-        rel = Relationship(
-            source_id="a", target_id="b", relationship_type="uses"
-        )
+        rel = Relationship(source_id="a", target_id="b", relationship_type="uses")
         updated = graph.add_relationship(rel)
         assert rel.id in updated.relationships
 
@@ -350,9 +344,7 @@ class TestKnowledgeGraph:
         assert fact.id not in updated.facts
 
     def test_remove_relationship(self) -> None:
-        rel = Relationship(
-            source_id="a", target_id="b", relationship_type="uses"
-        )
+        rel = Relationship(source_id="a", target_id="b", relationship_type="uses")
         graph = KnowledgeGraph().add_relationship(rel)
         updated = graph.remove_relationship(rel.id)
         assert rel.id not in updated.relationships

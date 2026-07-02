@@ -27,7 +27,10 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Lint
-        run: ruff check knowledge/
+        run: ruff check knowledge/ tests/
+
+      - name: Format check
+        run: ruff format --check knowledge/ tests/
 
       - name: Type check
         run: mypy knowledge/
