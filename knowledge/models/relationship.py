@@ -1,3 +1,5 @@
+"""Relationship model — a typed connection between two knowledge elements."""
+
 from pydantic import Field
 
 from knowledge.models.base import KnowledgeModel

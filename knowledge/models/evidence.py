@@ -1,3 +1,5 @@
+"""Evidence model — supporting material from which knowledge is derived."""
+
 from knowledge.models.base import KnowledgeModel
 
 

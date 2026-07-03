@@ -1,3 +1,5 @@
+"""Concept model — an abstract idea that organizes knowledge."""
+
 from pydantic import Field
 
 from knowledge.models.base import KnowledgeModel

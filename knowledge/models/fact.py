@@ -1,3 +1,5 @@
+"""Fact model — a statement supported by evidence."""
+
 from pydantic import Field
 
 from knowledge.models.base import KnowledgeModel

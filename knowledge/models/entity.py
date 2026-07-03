@@ -1,3 +1,5 @@
+"""Entity model — a uniquely identifiable thing in the knowledge domain."""
+
 from pydantic import Field
 
 from knowledge.models.base import KnowledgeModel

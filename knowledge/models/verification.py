@@ -1,3 +1,5 @@
+"""Verification state enum for knowledge elements."""
+
 from enum import Enum
 
 
