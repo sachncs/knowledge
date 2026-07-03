@@ -1,9 +1,9 @@
 """Verification state enum for knowledge elements."""
 
-from enum import Enum
+from enum import StrEnum
 
 
-class VerificationState(str, Enum):
+class VerificationState(StrEnum):
     """Represents the verification status of a knowledge element.
 
     Each knowledge element tracks its own verification state independently,

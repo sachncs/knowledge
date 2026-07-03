@@ -8,7 +8,7 @@ registration, ordering, and orchestration.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import StrEnum
 from typing import Any, ClassVar
 
 from pydantic import BaseModel, Field
@@ -37,7 +37,7 @@ class KnowledgeScore(BaseModel, frozen=True):
     metadata_completeness: float = 0.0
 
 
-class Phase(str, Enum):
+class Phase(StrEnum):
     """The execution phase of a compiler pass.
 
     Phases define the stage of the compiler pipeline in which a

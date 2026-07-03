@@ -6,12 +6,12 @@ Diagnostics are structured, deterministic, and machine-readable.
 
 from __future__ import annotations
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class Severity(str, Enum):
+class Severity(StrEnum):
     """The severity level of a diagnostic.
 
     Severity levels help consumers filter and prioritize diagnostics:

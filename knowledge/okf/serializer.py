@@ -9,8 +9,6 @@ Provenance and metadata fields are serialized when present.
 
 from __future__ import annotations
 
-from typing import cast
-
 from knowledge.models import (
     Concept,
     Entity,
@@ -112,7 +110,7 @@ class OKFSerializer:
         """
         if value == VerificationState.PENDING:
             return ""
-        return cast(str, value.value)
+        return value.value
 
     @staticmethod
     def list_string(items: list[str]) -> str:
