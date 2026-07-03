@@ -1,3 +1,9 @@
+"""Base model classes for the canonical Knowledge Model.
+
+Defines Metadata, Provenance, and KnowledgeModel — the common base
+for all domain-level knowledge elements.
+"""
+
 from datetime import datetime
 from uuid import uuid4
 
