@@ -1,6 +1,7 @@
 """Compiler pass framework for the knowledge SDK."""
 
-from knowledge.passes.base import CompilerPass, PassResult, Phase
+from knowledge.passes.analysis_pass import GraphStatisticsPass
+from knowledge.passes.base import CompilerPass, KnowledgeScore, PassResult, Phase
 from knowledge.passes.consistency_pass import ConsistencyValidationPass
 from knowledge.passes.diagnostics import Diagnostic, Severity
 from knowledge.passes.extraction_pass import ExtractionPass
@@ -13,7 +14,7 @@ from knowledge.passes.repair_passes import (
     NormalizeConfidencePass,
 )
 from knowledge.passes.schema_pass import SchemaValidationPass
-from knowledge.passes.scoring_pass import KnowledgeScore, ScoringPass
+from knowledge.passes.scoring_pass import ScoringPass
 from knowledge.passes.structural_pass import StructuralValidationPass
 from knowledge.passes.verification_passes import (
     EvidenceValidationPass,
@@ -39,6 +40,7 @@ __all__ = [
     "StructuralValidationPass",
     "ConsistencyValidationPass",
     "ScoringPass",
+    "GraphStatisticsPass",
     "KnowledgeScore",
     "MergeDuplicateEntitiesPass",
     "AttachProvenancePass",
