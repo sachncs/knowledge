@@ -88,3 +88,32 @@
 - `214852c` Benchmark infrastructure (pytest-benchmark) with verification, serialization, and creation benchmarks
 - `214852c` Updated README.md with current milestone status and documentation links
 - `214852c` Updated pyproject.toml with benchmark dependencies and test paths
+
+### Code Quality & Refactoring
+
+- `e6ae787` (2026-07-03) Update tests for refactored API
+- `00d0512` (2026-07-03) Refactor SDK: public API, lifecycle methods, auto-verify on update
+- `cbdb936` (2026-07-03) Refactor CLI, extensions, and reasoning modules
+- `e7c8dac` (2026-07-03) Refactor VerificationEngine: register all passes, simplify scoring
+- `45f239a` (2026-07-03) Refactor repair passes
+- `8108eba` (2026-07-03) Refactor verification passes
+- `79b53ad` (2026-07-03) Refactor ScoringPass: public API, shared constants, docstrings
+- `c967672` (2026-07-03) Add KnowledgeScore, shared constants, and improve PassResult
+- `bf9838b` (2026-07-03) Add docstrings and fix naming in pass modules
+- `e71237a` (2026-07-03) Add comprehensive docstrings to OKF parser and serializer
+- `1096097` (2026-07-03) Refactor extraction module
+- `5ed5188` (2026-07-03) Consolidate normalization modules
+- `0228e27` (2026-07-03) Refactor KnowledgeGraph: simplify merge/diff, remove unused helpers
+- `afe90b4` (2026-07-03) Add module docstring to models/base.py
+- `962988f` (2026-07-03) Add docstrings to model modules
+- `c8f6246` (2026-07-03) Update passes module exports
+- `a6b4f0d` (2026-07-03) Update __init__.py imports for renamed version module
+- `de51f14` (2026-07-03) Rename _version.py to version.py and add new modules
+
+### Code Quality & Refactoring (continued)
+
+- `f6b72fa` (2026-07-03) docs: update documentation files
+- `12e6310` (2026-07-03) docs: add docstrings to extraction module
+- `b9d8a74` (2026-07-03) chore: update CI, README badges, gitignore, and cleanup.sh
+- `1bbd338` (2026-07-03) test: expand test coverage to 98% and remove semi-private naming
+- `a1a0dad` (2026-07-03) docs: add comprehensive docstrings across all modules
