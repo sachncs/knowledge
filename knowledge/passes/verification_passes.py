@@ -148,9 +148,7 @@ class OntologyValidationPass(CompilerPass):
                 diagnostics.append(
                     Diagnostic(
                         severity=Severity.WARNING,
-                        message=(
-                            f"Unknown relationship type '{rel.relationship_type}'"
-                        ),
+                        message=(f"Unknown relationship type '{rel.relationship_type}'"),
                         explanation=(
                             f"Relationship '{rel.id}' uses type '{rel.relationship_type}' "
                             f"which is not in the standard set: "

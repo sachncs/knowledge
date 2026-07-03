@@ -14,5 +14,8 @@ class Concept(KnowledgeModel):
     objects.
     """
 
-    name: str
-    description: str | None = Field(default=None)
+    name: str = Field(description="Canonical name of the concept")
+    description: str | None = Field(
+        default=None,
+        description="Human-readable definition of the concept",
+    )

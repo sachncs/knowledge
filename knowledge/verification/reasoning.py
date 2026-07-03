@@ -101,7 +101,7 @@ class DeterministicReasoningProvider(ReasoningProvider):
         contradictions: list[str] = []
 
         for i, s1 in enumerate(statements):
-            for s2 in statements[i + 1:]:
+            for s2 in statements[i + 1 :]:
                 if statements_are_contradictory(s1, s2):
                     contradictions.append(f"'{s1}' contradicts '{s2}'")
 

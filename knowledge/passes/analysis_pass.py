@@ -61,10 +61,10 @@ class GraphStatisticsPass(CompilerPass):
 
         if entity_count > 0 and rel_count > 0:
             isolated = sum(
-                1 for eid in graph.entities
+                1
+                for eid in graph.entities
                 if not any(
-                    r.source_id == eid or r.target_id == eid
-                    for r in graph.relationships.values()
+                    r.source_id == eid or r.target_id == eid for r in graph.relationships.values()
                 )
             )
             if isolated > 0:
@@ -73,8 +73,7 @@ class GraphStatisticsPass(CompilerPass):
                         severity=Severity.SUGGESTION,
                         message=f"{isolated} of {entity_count} entities have no relationships",
                         explanation=(
-                            "Isolated entities may indicate"
-                            " incomplete knowledge extraction."
+                            "Isolated entities may indicate incomplete knowledge extraction."
                         ),
                         location="analysis.statistics",
                     )

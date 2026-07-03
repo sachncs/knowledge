@@ -221,7 +221,11 @@ class Knowledge:
         content: str
         source: str
 
-        if input.startswith("file://") or input.startswith("http://") or input.startswith("https://"):
+        if (
+            input.startswith("file://")
+            or input.startswith("http://")
+            or input.startswith("https://")
+        ):
             raise UnsupportedSourceError(f"Remote sources not yet supported: {input}")
 
         # Try as file path first

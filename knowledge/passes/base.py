@@ -76,11 +76,25 @@ class PassResult(BaseModel, frozen=True):
     repairs_applied: int = 0
 
 
-VALID_RELATIONSHIP_TYPES: frozenset[str] = frozenset({
-    "uses", "depends_on", "extends", "implements", "part_of",
-    "contains", "creates", "manages", "requires", "supports",
-    "provides", "enables", "integrates_with", "references", "related_to",
-})
+VALID_RELATIONSHIP_TYPES: frozenset[str] = frozenset(
+    {
+        "uses",
+        "depends_on",
+        "extends",
+        "implements",
+        "part_of",
+        "contains",
+        "creates",
+        "manages",
+        "requires",
+        "supports",
+        "provides",
+        "enables",
+        "integrates_with",
+        "references",
+        "related_to",
+    }
+)
 
 
 class CompilerPass(ABC):

@@ -78,9 +78,7 @@ class AttachProvenancePass(CompilerPass):
                     source_id="unknown",
                     extractor="repair.attach_provenance",
                 )
-                new_graph = new_graph.update_entity(
-                    entity.model_copy(update={"provenance": prov})
-                )
+                new_graph = new_graph.update_entity(entity.model_copy(update={"provenance": prov}))
                 fixed_count += 1
 
         diag = Diagnostic(

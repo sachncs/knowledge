@@ -37,10 +37,16 @@ class PassManager:
     """
 
     def __init__(self) -> None:
+        """Initialize an empty pass manager."""
         self.passes: dict[str, CompilerPass] = {}
 
     @property
     def registered_ids(self) -> list[str]:
+        """Return the IDs of all registered passes.
+
+        Returns:
+            List of pass ID strings in registration order.
+        """
         return list(self.passes.keys())
 
     def register(self, pass_: CompilerPass) -> None:

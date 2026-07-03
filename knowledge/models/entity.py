@@ -15,6 +15,12 @@ class Entity(KnowledgeModel):
     naming, and a description providing human-readable context.
     """
 
-    name: str
-    aliases: list[str] = Field(default_factory=list)
-    description: str | None = None
+    name: str = Field(description="Canonical display name of the entity")
+    aliases: list[str] = Field(
+        default_factory=list,
+        description="Alternative names that refer to the same entity",
+    )
+    description: str | None = Field(
+        default=None,
+        description="Human-readable description providing context",
+    )

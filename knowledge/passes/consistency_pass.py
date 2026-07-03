@@ -47,7 +47,8 @@ class ConsistencyValidationPass(CompilerPass):
         for name, ids in name_map.items():
             if len(ids) > 1:
                 descriptions = [
-                    graph.entities[eid].description for eid in ids
+                    graph.entities[eid].description
+                    for eid in ids
                     if graph.entities[eid].description
                 ]
                 if len(set(descriptions)) > 1:
@@ -67,7 +68,7 @@ class ConsistencyValidationPass(CompilerPass):
         # Check for contradictory fact statements
         fact_pairs = list(graph.facts.values())
         for i, f1 in enumerate(fact_pairs):
-            for f2 in fact_pairs[i + 1:]:
+            for f2 in fact_pairs[i + 1 :]:
                 if statements_are_contradictory(f1.statement, f2.statement):
                     diagnostics.append(
                         Diagnostic(

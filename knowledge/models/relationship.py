@@ -15,7 +15,12 @@ class Relationship(KnowledgeModel):
     The source and target are identified by their stable identifiers.
     """
 
-    source_id: str
-    target_id: str
-    relationship_type: str
-    evidence_refs: list[str] = Field(default_factory=list)
+    source_id: str = Field(description="Stable identifier of the source knowledge element")
+    target_id: str = Field(description="Stable identifier of the target knowledge element")
+    relationship_type: str = Field(
+        description="Semantic type of the relationship (e.g. 'depends_on', 'implements')",
+    )
+    evidence_refs: list[str] = Field(
+        default_factory=list,
+        description="Stable identifiers of evidence supporting this relationship",
+    )

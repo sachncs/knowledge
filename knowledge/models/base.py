@@ -21,10 +21,22 @@ class Metadata(BaseModel, frozen=True):
     semantic meaning.
     """
 
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
-    tags: list[str] = Field(default_factory=list)
-    version: int = 1
+    created_at: datetime = Field(
+        default_factory=datetime.now,
+        description="Timestamp when the element was first created",
+    )
+    updated_at: datetime = Field(
+        default_factory=datetime.now,
+        description="Timestamp when the element was last modified",
+    )
+    tags: list[str] = Field(
+        default_factory=list,
+        description="Classification tags for filtering and organization",
+    )
+    version: int = Field(
+        default=1,
+        description="Monotonically increasing version number for change tracking",
+    )
 
 
 class Provenance(BaseModel, frozen=True):
@@ -37,10 +49,19 @@ class Provenance(BaseModel, frozen=True):
     - Which verification cycle accepted it?
     """
 
-    source_id: str
-    extracted_at: datetime = Field(default_factory=datetime.now)
-    extractor: str = "unknown"
-    verification_cycle: str | None = None
+    source_id: str = Field(description="Identifier of the source document")
+    extracted_at: datetime = Field(
+        default_factory=datetime.now,
+        description="When the element was extracted from its source",
+    )
+    extractor: str = Field(
+        default="unknown",
+        description="Name of the extractor or process that produced this element",
+    )
+    verification_cycle: str | None = Field(
+        default=None,
+        description="Identifier of the verification cycle that accepted this element",
+    )
 
 
 class KnowledgeModel(BaseModel, frozen=True):
@@ -54,8 +75,25 @@ class KnowledgeModel(BaseModel, frozen=True):
     inherit from this class.
     """
 
-    id: str = Field(default_factory=lambda: uuid4().hex)
-    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    verification_state: VerificationState = VerificationState.PENDING
-    provenance: Provenance | None = None
-    metadata: Metadata = Field(default_factory=Metadata)
+    id: str = Field(
+        default_factory=lambda: uuid4().hex,
+        description="Stable identifier unique across all knowledge elements",
+    )
+    confidence: float = Field(
+        default=0.0,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score between 0.0 and 1.0",
+    )
+    verification_state: VerificationState = Field(
+        default=VerificationState.PENDING,
+        description="Current verification status of this element",
+    )
+    provenance: Provenance | None = Field(
+        default=None,
+        description="Origin and history record for this element",
+    )
+    metadata: Metadata = Field(
+        default_factory=Metadata,
+        description="Operational metadata (timestamps, tags, version)",
+    )

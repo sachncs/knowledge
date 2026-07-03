@@ -1,5 +1,7 @@
 """Evidence model — supporting material from which knowledge is derived."""
 
+from pydantic import Field
+
 from knowledge.models.base import KnowledgeModel
 
 
@@ -14,5 +16,5 @@ class Evidence(KnowledgeModel):
     but evidence never references knowledge.
     """
 
-    content: str
-    source: str
+    content: str = Field(description="Raw source content (paragraph, URL, spec excerpt)")
+    source: str = Field(description="Identifier of the source document or location")

@@ -57,6 +57,18 @@ class StructuralValidationPass(CompilerPass):
         graph: KnowledgeGraph,
         config: dict[str, Any] | None = None,
     ) -> PassResult:
+        """Validate structural integrity of the KnowledgeGraph.
+
+        Checks for orphaned relationship references, missing evidence
+        references, duplicate aliases, and circular dependencies.
+
+        Args:
+            graph: The knowledge graph to validate.
+            config: Optional configuration dictionary.
+
+        Returns:
+            PassResult with structural validation diagnostics.
+        """
         diagnostics: list[Diagnostic] = []
         entity_ids = set(graph.entities.keys())
         evidence_ids = set(graph.evidence.keys())

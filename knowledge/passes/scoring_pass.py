@@ -53,8 +53,11 @@ class ScoringPass(CompilerPass):
             A KnowledgeScore with overall and per-dimension scores.
         """
         total_elements = (
-            len(graph.entities) + len(graph.concepts) + len(graph.facts)
-            + len(graph.relationships) + len(graph.evidence)
+            len(graph.entities)
+            + len(graph.concepts)
+            + len(graph.facts)
+            + len(graph.relationships)
+            + len(graph.evidence)
         )
         if total_elements == 0:
             return KnowledgeScore()
@@ -66,8 +69,10 @@ class ScoringPass(CompilerPass):
         metadata = self.score_metadata(graph, total_elements)
 
         overall = (
-            completeness * 0.25 + consistency * 0.25
-            + evidence_quality * 0.20 + ontology_quality * 0.15
+            completeness * 0.25
+            + consistency * 0.25
+            + evidence_quality * 0.20
+            + ontology_quality * 0.15
             + metadata * 0.15
         )
 
@@ -93,9 +98,7 @@ class ScoringPass(CompilerPass):
         """
         has_description = sum(1 for e in graph.entities.values() if e.description)
         has_statement = sum(1 for f in graph.facts.values() if f.statement)
-        return (
-            (has_description + has_statement) / max(total, 1)
-        ) * 100.0
+        return ((has_description + has_statement) / max(total, 1)) * 100.0
 
     @staticmethod
     def score_consistency(graph: KnowledgeGraph, total: int) -> float:
@@ -172,7 +175,8 @@ class ScoringPass(CompilerPass):
         if not graph.relationships:
             return 100.0
         valid = sum(
-            1 for r in graph.relationships.values()
+            1
+            for r in graph.relationships.values()
             if r.relationship_type in VALID_RELATIONSHIP_TYPES
         )
         return (valid / len(graph.relationships)) * 100.0

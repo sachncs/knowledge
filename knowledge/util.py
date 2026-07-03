@@ -2,9 +2,19 @@
 
 from __future__ import annotations
 
-NEGATION_WORDS: frozenset[str] = frozenset({
-    "not", "no", "never", "cannot", "doesn't", "isn't", "won't", "don't",
-})
+NEGATION_WORDS: frozenset[str] = frozenset(
+    {
+        "not",
+        "no",
+        "never",
+        "cannot",
+        "doesn't",
+        "isn't",
+        "won't",
+        "don't",
+    }
+)
+"""Words that negate a statement, used for contradiction detection."""
 
 
 def statements_are_contradictory(s1: str, s2: str) -> bool:

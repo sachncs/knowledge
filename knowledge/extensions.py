@@ -29,6 +29,13 @@ class ExtensionConfig:
         disabled_passes: list[str] | None = None,
         pass_config: dict[str, dict[str, Any]] | None = None,
     ) -> None:
+        """Initialize an extension configuration.
+
+        Args:
+            enabled_passes: Only these pass IDs are allowed to run.
+            disabled_passes: These pass IDs are explicitly excluded.
+            pass_config: Pass-specific configuration keyed by pass ID.
+        """
         self.enabled_passes = enabled_passes or []
         self.disabled_passes = disabled_passes or []
         self.pass_config = pass_config or {}
@@ -62,6 +69,7 @@ class ExtensionRegistry:
     ENTRY_POINT_GROUP = "knowledge.passes"
 
     def __init__(self) -> None:
+        """Initialize an empty extension registry."""
         self.plugins: dict[str, type[CompilerPass]] = {}
 
     def discover(self) -> list[str]:
@@ -86,7 +94,14 @@ class ExtensionRegistry:
         return discovered
 
     def register_plugin(self, pass_cls: type[CompilerPass]) -> str:
-        """Register a plugin pass class."""
+        """Register a plugin pass class.
+
+        Args:
+            pass_cls: A CompilerPass subclass to register.
+
+        Returns:
+            The pass ID of the registered plugin.
+        """
         instance = pass_cls()
         self.plugins[instance.id] = pass_cls
         return instance.id

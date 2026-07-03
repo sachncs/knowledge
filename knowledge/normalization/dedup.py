@@ -20,6 +20,17 @@ class DuplicateDetector:
     """
 
     def deduplicate_entities(self, graph: KnowledgeGraph) -> KnowledgeGraph:
+        """Merge duplicate entities by canonical name.
+
+        Entities with the same normalized name are collapsed into one,
+        with aliases merged from both the existing and duplicate entries.
+
+        Args:
+            graph: The knowledge graph to process.
+
+        Returns:
+            KnowledgeGraph with duplicate entities merged.
+        """
         seen: dict[str, Entity] = {}
 
         for entity in graph.entities.values():
@@ -30,18 +41,25 @@ class DuplicateDetector:
                     set(existing.aliases + entity.aliases + [entity.name, existing.name])
                 )
                 merged_aliases.sort()
-                updated = existing.model_copy(
-                    update={"aliases": merged_aliases}
-                )
+                updated = existing.model_copy(update={"aliases": merged_aliases})
                 seen[key] = updated
             else:
                 seen[key] = entity
 
-        return graph.model_copy(
-            update={"entities": {e.id: e for e in seen.values()}}
-        )
+        return graph.model_copy(update={"entities": {e.id: e for e in seen.values()}})
 
     def deduplicate_concepts(self, graph: KnowledgeGraph) -> KnowledgeGraph:
+        """Merge duplicate concepts by canonical name.
+
+        Concepts with the same normalized name are collapsed into one,
+        preferring the first non-null description.
+
+        Args:
+            graph: The knowledge graph to process.
+
+        Returns:
+            KnowledgeGraph with duplicate concepts merged.
+        """
         seen: dict[str, Concept] = {}
 
         for concept in graph.concepts.values():
@@ -57,9 +75,7 @@ class DuplicateDetector:
             else:
                 seen[key] = concept
 
-        return graph.model_copy(
-            update={"concepts": {c.id: c for c in seen.values()}}
-        )
+        return graph.model_copy(update={"concepts": {c.id: c for c in seen.values()}})
 
     def resolve(self, graph: KnowledgeGraph) -> KnowledgeGraph:
         """Alias compatibility: delegating to deduplicate_entities.
@@ -73,6 +89,16 @@ class DuplicateDetector:
         return self.deduplicate_entities(graph)
 
     def deduplicate_all(self, graph: KnowledgeGraph) -> KnowledgeGraph:
+        """Run all deduplication passes against the graph.
+
+        Applies entity deduplication followed by concept deduplication.
+
+        Args:
+            graph: The knowledge graph to process.
+
+        Returns:
+            KnowledgeGraph with all duplicates merged.
+        """
         graph = self.deduplicate_entities(graph)
         graph = self.deduplicate_concepts(graph)
         return graph

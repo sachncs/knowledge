@@ -16,5 +16,8 @@ class Fact(KnowledgeModel):
     enforced by convention rather than by the model itself.
     """
 
-    statement: str
-    evidence_refs: list[str] = Field(default_factory=list)
+    statement: str = Field(description="The factual claim expressed in natural language")
+    evidence_refs: list[str] = Field(
+        default_factory=list,
+        description="Stable identifiers of evidence blocks supporting this fact",
+    )
