@@ -3,6 +3,8 @@
 Converts a canonical KnowledgeGraph into an OKF Markdown document.
 The serializer produces deterministic output — the same KnowledgeGraph
 always produces the same Markdown.
+
+Provenance and metadata fields are serialized when present.
 """
 
 from __future__ import annotations
@@ -31,32 +33,51 @@ class OKFSerializer:
     """
 
     def serialize(self, graph: KnowledgeGraph) -> str:
+        """Serialize a ``KnowledgeGraph`` into OKF Markdown.
+
+        Args:
+            graph: The knowledge graph to serialize.
+
+        Returns:
+            A deterministic OKF Markdown string.
+        """
         parts: list[str] = [OKF_HEADER, ""]
 
         for entity in sorted(graph.entities.values(), key=lambda e: e.id):
-            parts.extend(self._serialize_entity(entity))
+            parts.extend(self.serialize_entity(entity))
             parts.append("")
 
         for concept in sorted(graph.concepts.values(), key=lambda c: c.id):
-            parts.extend(self._serialize_concept(concept))
+            parts.extend(self.serialize_concept(concept))
             parts.append("")
 
         for fact in sorted(graph.facts.values(), key=lambda f: f.id):
-            parts.extend(self._serialize_fact(fact))
+            parts.extend(self.serialize_fact(fact))
             parts.append("")
 
         for rel in sorted(graph.relationships.values(), key=lambda r: r.id):
-            parts.extend(self._serialize_relationship(rel))
+            parts.extend(self.serialize_relationship(rel))
             parts.append("")
 
         for ev in sorted(graph.evidence.values(), key=lambda e: e.id):
-            parts.extend(self._serialize_evidence(ev))
+            parts.extend(self.serialize_evidence(ev))
             parts.append("")
 
         return "\n".join(parts).strip() + "\n"
 
     @staticmethod
-    def _field(key: str, value: str) -> list[str]:
+    def field(key: str, value: str) -> list[str]:
+        """Format a single key-value field as Markdown list lines.
+
+        Supports multi-line values by splitting on newlines.
+
+        Args:
+            key: The field name.
+            value: The field value (may contain newlines).
+
+        Returns:
+            A list of Markdown lines for the field. Empty if value is empty.
+        """
         if not value:
             return []
         first, *rest = value.split("\n")
@@ -66,77 +87,193 @@ class OKFSerializer:
         return lines
 
     @staticmethod
-    def _confidence(value: float) -> str:
+    def confidence(value: float) -> str:
+        """Format a confidence value as a string.
+
+        Args:
+            value: The confidence float (``0.0`` to ``1.0``).
+
+        Returns:
+            A formatted string (e.g. ``"0.85"``), or empty string if ``0.0``.
+        """
         if value == 0.0:
             return ""
         return f"{value:.2f}"
 
     @staticmethod
-    def _verification(value: VerificationState) -> str:
+    def verification(value: VerificationState) -> str:
+        """Format a ``VerificationState`` as a string.
+
+        Args:
+            value: The verification state.
+
+        Returns:
+            The state value string, or empty string if ``PENDING``.
+        """
         if value == VerificationState.PENDING:
             return ""
         return cast(str, value.value)
 
     @staticmethod
-    def _list_string(items: list[str]) -> str:
+    def list_string(items: list[str]) -> str:
+        """Join a list of strings into a comma-separated string.
+
+        Args:
+            items: The list of strings.
+
+        Returns:
+            A comma-separated string, or empty string if the list is empty.
+        """
         if not items:
             return ""
         return ", ".join(items)
 
-    def _serialize_entity(self, entity: Entity) -> list[str]:
+    @staticmethod
+    def provenance_fields(entity: Entity | Concept | Fact | Relationship | Evidence) -> list[str]:
+        """Serialize provenance sub-fields for an element.
+
+        Args:
+            entity: The knowledge graph element with optional provenance.
+
+        Returns:
+            A list of Markdown lines for provenance fields.
+        """
+        lines: list[str] = []
+        if entity.provenance:
+            lines.extend(OKFSerializer.field("provenance_source", entity.provenance.source_id))
+            lines.extend(OKFSerializer.field("provenance_extractor", entity.provenance.extractor))
+            if entity.provenance.verification_cycle:
+                lines.extend(
+                    OKFSerializer.field("provenance_cycle", entity.provenance.verification_cycle)
+                )
+        return [line for line in lines if line]
+
+    @staticmethod
+    def metadata_fields(
+        entity: Entity | Concept | Fact | Relationship | Evidence,
+    ) -> list[str]:
+        """Serialize metadata sub-fields for an element.
+
+        Args:
+            entity: The knowledge graph element with optional metadata.
+
+        Returns:
+            A list of Markdown lines for metadata fields.
+        """
+        lines: list[str] = []
+        if entity.metadata:
+            if entity.metadata.tags:
+                lines.extend(
+                    OKFSerializer.field("tags", OKFSerializer.list_string(entity.metadata.tags))
+                )
+            if entity.metadata.version != 1:
+                lines.extend(OKFSerializer.field("version", str(entity.metadata.version)))
+        return [line for line in lines if line]
+
+    def serialize_entity(self, entity: Entity) -> list[str]:
+        """Serialize an ``Entity`` into Markdown lines.
+
+        Args:
+            entity: The entity to serialize.
+
+        Returns:
+            A list of Markdown lines.
+        """
         lines = [f"## Entity: {entity.id}"]
-        lines.extend(self._field("name", entity.name))
-        lines.extend(self._field("aliases", self._list_string(entity.aliases)))
-        lines.extend(self._field("description", entity.description or ""))
-        lines.extend(self._field("confidence", self._confidence(entity.confidence)))
-        lines.extend(self._field("verification", self._verification(entity.verification_state)))
+        lines.extend(self.field("name", entity.name))
+        lines.extend(self.field("aliases", self.list_string(entity.aliases)))
+        lines.extend(self.field("description", entity.description or ""))
+        lines.extend(self.field("confidence", self.confidence(entity.confidence)))
+        lines.extend(self.field("verification", self.verification(entity.verification_state)))
+        lines.extend(self.provenance_fields(entity))
+        lines.extend(self.metadata_fields(entity))
         return [line for line in lines if line]
 
-    def _serialize_concept(self, concept: Concept) -> list[str]:
+    def serialize_concept(self, concept: Concept) -> list[str]:
+        """Serialize a ``Concept`` into Markdown lines.
+
+        Args:
+            concept: The concept to serialize.
+
+        Returns:
+            A list of Markdown lines.
+        """
         lines = [f"## Concept: {concept.id}"]
-        lines.extend(self._field("name", concept.name))
-        lines.extend(self._field("description", concept.description or ""))
-        lines.extend(self._field("confidence", self._confidence(concept.confidence)))
+        lines.extend(self.field("name", concept.name))
+        lines.extend(self.field("description", concept.description or ""))
+        lines.extend(self.field("confidence", self.confidence(concept.confidence)))
         lines.extend(
-            self._field(
+            self.field(
                 "verification",
-                self._verification(concept.verification_state),
+                self.verification(concept.verification_state),
             )
         )
+        lines.extend(self.provenance_fields(concept))
+        lines.extend(self.metadata_fields(concept))
         return [line for line in lines if line]
 
-    def _serialize_fact(self, fact: Fact) -> list[str]:
+    def serialize_fact(self, fact: Fact) -> list[str]:
+        """Serialize a ``Fact`` into Markdown lines.
+
+        Args:
+            fact: The fact to serialize.
+
+        Returns:
+            A list of Markdown lines.
+        """
         lines = [f"## Fact: {fact.id}"]
-        lines.extend(self._field("statement", fact.statement))
-        lines.extend(self._field("evidence", self._list_string(fact.evidence_refs)))
-        lines.extend(self._field("confidence", self._confidence(fact.confidence)))
-        lines.extend(self._field("verification", self._verification(fact.verification_state)))
+        lines.extend(self.field("statement", fact.statement))
+        lines.extend(self.field("evidence", self.list_string(fact.evidence_refs)))
+        lines.extend(self.field("confidence", self.confidence(fact.confidence)))
+        lines.extend(self.field("verification", self.verification(fact.verification_state)))
+        lines.extend(self.provenance_fields(fact))
+        lines.extend(self.metadata_fields(fact))
         return [line for line in lines if line]
 
-    def _serialize_relationship(self, rel: Relationship) -> list[str]:
+    def serialize_relationship(self, rel: Relationship) -> list[str]:
+        """Serialize a ``Relationship`` into Markdown lines.
+
+        Args:
+            rel: The relationship to serialize.
+
+        Returns:
+            A list of Markdown lines.
+        """
         lines = [f"## Relationship: {rel.id}"]
-        lines.extend(self._field("source", rel.source_id))
-        lines.extend(self._field("target", rel.target_id))
-        lines.extend(self._field("type", rel.relationship_type))
-        lines.extend(self._field("evidence", self._list_string(rel.evidence_refs)))
-        lines.extend(self._field("confidence", self._confidence(rel.confidence)))
+        lines.extend(self.field("source", rel.source_id))
+        lines.extend(self.field("target", rel.target_id))
+        lines.extend(self.field("type", rel.relationship_type))
+        lines.extend(self.field("evidence", self.list_string(rel.evidence_refs)))
+        lines.extend(self.field("confidence", self.confidence(rel.confidence)))
         lines.extend(
-            self._field(
+            self.field(
                 "verification",
-                self._verification(rel.verification_state),
+                self.verification(rel.verification_state),
             )
         )
+        lines.extend(self.provenance_fields(rel))
+        lines.extend(self.metadata_fields(rel))
         return [line for line in lines if line]
 
-    def _serialize_evidence(self, evidence: Evidence) -> list[str]:
+    def serialize_evidence(self, evidence: Evidence) -> list[str]:
+        """Serialize an ``Evidence`` into Markdown lines.
+
+        Args:
+            evidence: The evidence to serialize.
+
+        Returns:
+            A list of Markdown lines.
+        """
         lines = [f"## Evidence: {evidence.id}"]
-        lines.extend(self._field("content", evidence.content))
-        lines.extend(self._field("source", evidence.source))
-        lines.extend(self._field("confidence", self._confidence(evidence.confidence)))
+        lines.extend(self.field("content", evidence.content))
+        lines.extend(self.field("source", evidence.source))
+        lines.extend(self.field("confidence", self.confidence(evidence.confidence)))
         lines.extend(
-            self._field(
+            self.field(
                 "verification",
-                self._verification(evidence.verification_state),
+                self.verification(evidence.verification_state),
             )
         )
+        lines.extend(self.provenance_fields(evidence))
+        lines.extend(self.metadata_fields(evidence))
         return [line for line in lines if line]
