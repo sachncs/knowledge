@@ -22,6 +22,36 @@ class StructuralValidationPass(CompilerPass):
     description = "Validate structural integrity of the knowledge graph"
     depends_on = ("verification.schema",)
 
+    @staticmethod
+    def has_cycle(
+        node: str,
+        path: set[str],
+        visited: set[str],
+        rel_graph: dict[str, set[str]],
+    ) -> bool:
+        """Check for circular dependencies starting from a node.
+
+        Args:
+            node: The entity ID to start checking from.
+            path: Current DFS path (for cycle detection).
+            visited: Already-visited nodes.
+            rel_graph: Adjacency list of entity relationships.
+
+        Returns:
+            True if a cycle is detected, False otherwise.
+        """
+        if node in path:
+            return True
+        if node in visited:
+            return False
+        path.add(node)
+        for neighbor in rel_graph.get(node, set()):
+            if StructuralValidationPass.has_cycle(neighbor, path, visited, rel_graph):
+                return True
+        path.remove(node)
+        visited.add(node)
+        return False
+
     def execute(
         self,
         graph: KnowledgeGraph,
@@ -82,21 +112,8 @@ class StructuralValidationPass(CompilerPass):
         visited: set[str] = set()
         path: set[str] = set()
 
-        def _has_cycle(node: str) -> bool:
-            if node in path:
-                return True
-            if node in visited:
-                return False
-            path.add(node)
-            for neighbor in rel_graph.get(node, set()):
-                if _has_cycle(neighbor):
-                    return True
-            path.remove(node)
-            visited.add(node)
-            return False
-
         for eid in entity_ids:
-            if _has_cycle(eid):
+            if StructuralValidationPass.has_cycle(eid, path, visited, rel_graph):
                 diagnostics.append(
                     Diagnostic(
                         severity=Severity.WARNING,

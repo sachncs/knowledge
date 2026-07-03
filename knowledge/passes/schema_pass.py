@@ -26,11 +26,20 @@ class SchemaValidationPass(CompilerPass):
         graph: KnowledgeGraph,
         config: dict[str, Any] | None = None,
     ) -> PassResult:
+        """Validate schema compliance of all knowledge elements.
+
+        Args:
+            graph: The knowledge graph to validate.
+            config: Optional configuration dictionary.
+
+        Returns:
+            PassResult with schema validation diagnostics.
+        """
         diagnostics: list[Diagnostic] = []
         seen_ids: dict[str, str] = {}
 
         for eid, entity in graph.entities.items():
-            self._check_id(eid, "entity", seen_ids, diagnostics)
+            self.check_id(eid, "entity", seen_ids, diagnostics)
             if not entity.name:
                 diagnostics.append(
                     Diagnostic(
@@ -42,7 +51,7 @@ class SchemaValidationPass(CompilerPass):
                 )
 
         for cid, concept in graph.concepts.items():
-            self._check_id(cid, "concept", seen_ids, diagnostics)
+            self.check_id(cid, "concept", seen_ids, diagnostics)
             if not concept.name:
                 diagnostics.append(
                     Diagnostic(
@@ -54,7 +63,7 @@ class SchemaValidationPass(CompilerPass):
                 )
 
         for fid, fact in graph.facts.items():
-            self._check_id(fid, "fact", seen_ids, diagnostics)
+            self.check_id(fid, "fact", seen_ids, diagnostics)
             if not fact.statement:
                 diagnostics.append(
                     Diagnostic(
@@ -66,7 +75,7 @@ class SchemaValidationPass(CompilerPass):
                 )
 
         for rid, rel in graph.relationships.items():
-            self._check_id(rid, "relationship", seen_ids, diagnostics)
+            self.check_id(rid, "relationship", seen_ids, diagnostics)
             if not rel.source_id:
                 diagnostics.append(
                     Diagnostic(
@@ -96,7 +105,7 @@ class SchemaValidationPass(CompilerPass):
                 )
 
         for evid, ev in graph.evidence.items():
-            self._check_id(evid, "evidence", seen_ids, diagnostics)
+            self.check_id(evid, "evidence", seen_ids, diagnostics)
             if not ev.content:
                 diagnostics.append(
                     Diagnostic(
@@ -119,12 +128,23 @@ class SchemaValidationPass(CompilerPass):
         return PassResult(graph=graph, diagnostics=diagnostics)
 
     @staticmethod
-    def _check_id(
+    def check_id(
         eid: str,
         kind: str,
         seen: dict[str, str],
         diagnostics: list[Diagnostic],
     ) -> None:
+        """Validate an identifier for emptiness and uniqueness.
+
+        Args:
+            eid: The identifier to check.
+            kind: Human-readable element type (e.g. "entity", "fact").
+            seen: Map of previously seen ids to their element kinds.
+            diagnostics: Accumulator for diagnostics.
+
+        Returns:
+            None
+        """
         if not eid:
             diagnostics.append(
                 Diagnostic(

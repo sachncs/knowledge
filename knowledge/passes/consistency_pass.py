@@ -7,6 +7,7 @@ from typing import Any
 from knowledge.models import KnowledgeGraph
 from knowledge.passes.base import CompilerPass, PassResult, Phase
 from knowledge.passes.diagnostics import Diagnostic, Severity
+from knowledge.util import statements_are_contradictory
 
 
 class ConsistencyValidationPass(CompilerPass):
@@ -27,6 +28,15 @@ class ConsistencyValidationPass(CompilerPass):
         graph: KnowledgeGraph,
         config: dict[str, Any] | None = None,
     ) -> PassResult:
+        """Validate internal consistency of the KnowledgeGraph.
+
+        Args:
+            graph: The knowledge graph to validate.
+            config: Optional configuration dictionary.
+
+        Returns:
+            PassResult with consistency validation diagnostics.
+        """
         diagnostics: list[Diagnostic] = []
 
         name_map: dict[str, list[str]] = {}
@@ -58,7 +68,7 @@ class ConsistencyValidationPass(CompilerPass):
         fact_pairs = list(graph.facts.values())
         for i, f1 in enumerate(fact_pairs):
             for f2 in fact_pairs[i + 1:]:
-                if self._are_contradictory(f1.statement, f2.statement):
+                if statements_are_contradictory(f1.statement, f2.statement):
                     diagnostics.append(
                         Diagnostic(
                             severity=Severity.WARNING,
@@ -88,16 +98,3 @@ class ConsistencyValidationPass(CompilerPass):
                 )
 
         return PassResult(graph=graph, diagnostics=diagnostics)
-
-    @staticmethod
-    def _are_contradictory(s1: str, s2: str) -> bool:
-        negative_words = {"not", "no", "never", "cannot", "doesn't", "isn't", "won't"}
-        s1_neg = any(w in s1.lower().split() for w in negative_words)
-        s2_neg = any(w in s2.lower().split() for w in negative_words)
-        if s1_neg != s2_neg:
-            s1_clean = " ".join(w for w in s1.lower().split() if w not in negative_words)
-            s2_clean = " ".join(w for w in s2.lower().split() if w not in negative_words)
-            common = set(s1_clean.split()) & set(s2_clean.split())
-            significant = {w for w in common if len(w) > 3}
-            return len(significant) >= 2
-        return False

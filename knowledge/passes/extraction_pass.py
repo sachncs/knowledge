@@ -29,13 +29,28 @@ class ExtractionPass(CompilerPass):
     description = "Extract entities, concepts, facts, and relationships from source content"
 
     def __init__(self) -> None:
-        self._pipeline = ExtractionPipeline()
+        self.pipeline = ExtractionPipeline()
 
     def execute(
         self,
         graph: KnowledgeGraph,
         config: dict[str, Any] | None = None,
     ) -> PassResult:
+        """Run the extraction pipeline on source content.
+
+        Reads content from the config, runs the extraction pipeline,
+        and populates the graph with discovered entities, concepts,
+        facts, relationships, and evidence.
+
+        Args:
+            graph: The current KnowledgeGraph to process.
+            config: Optional configuration with keys ``content``,
+                ``source``, and ``format`` (``"text"`` or ``"markdown"``).
+
+        Returns:
+            A PassResult with the enriched graph and an informational
+            diagnostic summarising extracted elements.
+        """
         cfg = config or {}
         content: str = cfg.get("content", "")
         source: str = cfg.get("source", "unknown")
@@ -54,7 +69,7 @@ class ExtractionPass(CompilerPass):
             doc = MarkdownSourceReader().read(content, source)
         else:
             doc = TextSourceReader().read(content, source)
-        result = self._pipeline.extract(doc.content, source)
+        result = self.pipeline.extract(doc.content, source)
 
         new_graph = graph
         for entity in result.entities:

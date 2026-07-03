@@ -10,7 +10,6 @@ from __future__ import annotations
 from typing import Any
 
 from knowledge.models import KnowledgeGraph
-from knowledge.normalization.aliases import AliasResolver
 from knowledge.normalization.dedup import DuplicateDetector
 from knowledge.passes.base import CompilerPass, PassResult, Phase
 from knowledge.passes.diagnostics import Diagnostic, Severity
@@ -25,18 +24,28 @@ class AliasResolutionPass(CompilerPass):
     description = "Resolve entity aliases and consolidate equivalent entities"
 
     def __init__(self) -> None:
-        self._resolver = AliasResolver()
+        self.detector = DuplicateDetector()
 
     def execute(
         self,
         graph: KnowledgeGraph,
         config: dict[str, Any] | None = None,
     ) -> PassResult:
+        """Resolve entity aliases and consolidate equivalent entities.
+
+        Args:
+            graph: The current KnowledgeGraph to process.
+            config: Optional pass-specific configuration.
+
+        Returns:
+            A PassResult with a graph where equivalent entities have
+            been merged, and an informational diagnostic.
+        """
         if not graph.entities:
             return PassResult(graph=graph)
 
         entity_count = len(graph.entities)
-        new_graph = self._resolver.resolve(graph)
+        new_graph = self.detector.deduplicate_entities(graph)
 
         new_count = len(new_graph.entities)
         diag = Diagnostic(
@@ -57,17 +66,27 @@ class DuplicateDetectionPass(CompilerPass):
     depends_on = ("normalization.aliases",)
 
     def __init__(self) -> None:
-        self._detector = DuplicateDetector()
+        self.detector = DuplicateDetector()
 
     def execute(
         self,
         graph: KnowledgeGraph,
         config: dict[str, Any] | None = None,
     ) -> PassResult:
+        """Detect and merge duplicate entities and concepts.
+
+        Args:
+            graph: The current KnowledgeGraph to process.
+            config: Optional pass-specific configuration.
+
+        Returns:
+            A PassResult with a deduplicated graph and an informational
+            diagnostic summarising the changes.
+        """
         entity_count = len(graph.entities)
         concept_count = len(graph.concepts)
 
-        new_graph = self._detector.deduplicate_all(graph)
+        new_graph = self.detector.deduplicate_all(graph)
 
         diag = Diagnostic(
             severity=Severity.INFORMATION,

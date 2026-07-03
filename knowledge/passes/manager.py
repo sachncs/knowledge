@@ -5,6 +5,7 @@ The pass manager is responsible for:
 - Resolving execution order via topological sort.
 - Executing passes in dependency order.
 - Collecting diagnostics across all passes.
+- Collecting scores from scoring passes.
 - Detecting circular dependencies and missing dependencies.
 """
 
@@ -15,7 +16,7 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from knowledge.models import KnowledgeGraph
-from knowledge.passes.base import CompilerPass, PassResult, Phase
+from knowledge.passes.base import CompilerPass, KnowledgeScore, PassResult, Phase
 from knowledge.passes.diagnostics import Diagnostic
 
 
@@ -26,6 +27,8 @@ class PipelineResult(BaseModel, frozen=True):
     diagnostics: list[Diagnostic] = Field(default_factory=list)
     execution_order: list[str] = Field(default_factory=list)
     executed: list[str] = Field(default_factory=list)
+    score: KnowledgeScore | None = None
+    total_repairs: int = 0
 
 
 class PassManager:
@@ -34,11 +37,11 @@ class PassManager:
     """
 
     def __init__(self) -> None:
-        self._passes: dict[str, CompilerPass] = {}
+        self.passes: dict[str, CompilerPass] = {}
 
     @property
     def registered_ids(self) -> list[str]:
-        return list(self._passes.keys())
+        return list(self.passes.keys())
 
     def register(self, pass_: CompilerPass) -> None:
         """Register a compiler pass.
@@ -54,9 +57,9 @@ class PassManager:
             raise ValueError("Pass must have a non-empty id")
         if not isinstance(pass_.phase, Phase):
             raise ValueError(f"Pass {pass_.id} must have a valid phase")
-        if pass_.id in self._passes:
+        if pass_.id in self.passes:
             raise ValueError(f"Pass already registered: {pass_.id}")
-        self._passes[pass_.id] = pass_
+        self.passes[pass_.id] = pass_
 
     def resolve_order(self, phases: list[Phase] | None = None) -> list[str]:
         """Resolve a topological execution order.
@@ -77,7 +80,7 @@ class PassManager:
                 dependency is detected.
         """
         candidates = {
-            pid: p for pid, p in self._passes.items() if phases is None or p.phase in phases
+            pid: p for pid, p in self.passes.items() if phases is None or p.phase in phases
         }
 
         if not candidates:
@@ -134,18 +137,25 @@ class PassManager:
         all_diagnostics: list[Diagnostic] = []
         current_graph = graph
         executed: list[str] = []
+        collected_score: KnowledgeScore | None = None
+        total_repairs = 0
 
         for pid in order:
-            pass_ = self._passes[pid]
+            pass_ = self.passes[pid]
             pass_config = (config or {}).get(pass_.id, {})
             result: PassResult = pass_.execute(current_graph, pass_config)
             current_graph = result.graph
             all_diagnostics.extend(result.diagnostics)
             executed.append(pid)
+            if result.score is not None:
+                collected_score = result.score
+            total_repairs += result.repairs_applied
 
         return PipelineResult(
             graph=current_graph,
             diagnostics=all_diagnostics,
             execution_order=order,
             executed=executed,
+            score=collected_score,
+            total_repairs=total_repairs,
         )
