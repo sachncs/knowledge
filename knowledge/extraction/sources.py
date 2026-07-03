@@ -27,6 +27,15 @@ class TextSourceReader:
     """Reads plain text content into a SourceDocument."""
 
     def read(self, content: str, source: str = "text") -> SourceDocument:
+        """Read plain text content into a SourceDocument.
+
+        Args:
+            content: The raw text content.
+            source: Identifier for the source document.
+
+        Returns:
+            A SourceDocument with format metadata set to "text".
+        """
         return SourceDocument(content=content, source=source, metadata={"format": "text"})
 
 
@@ -38,19 +47,28 @@ class MarkdownSourceReader:
     """
 
     # Regex to remove inline formatting
-    _LINK_PATTERN = re.compile(r"\[([^\]]+)\]\([^)]+\)")
-    _BOLD_PATTERN = re.compile(r"\*\*([^*]+)\*\*")
-    _ITALIC_PATTERN = re.compile(r"(?<!\*)\*([^*]+)\*(?!\*)")
-    _CODE_PATTERN = re.compile(r"`([^`]+)`")
-    _HEADING_PATTERN = re.compile(r"^#{1,6}\s+(.*)", re.MULTILINE)
+    LINK_PATTERN = re.compile(r"\[([^\]]+)\]\([^)]+\)")
+    BOLD_PATTERN = re.compile(r"\*\*([^*]+)\*\*")
+    ITALIC_PATTERN = re.compile(r"(?<!\*)\*([^*]+)\*(?!\*)")
+    CODE_PATTERN = re.compile(r"`([^`]+)`")
+    HEADING_PATTERN = re.compile(r"^#{1,6}\s+(.*)", re.MULTILINE)
 
     def read(self, content: str, source: str = "markdown") -> SourceDocument:
+        """Read Markdown content, stripping formatting to produce plain text.
+
+        Args:
+            content: The raw Markdown content.
+            source: Identifier for the source document.
+
+        Returns:
+            A SourceDocument with plain text content and heading metadata.
+        """
         text = content
-        text = self._LINK_PATTERN.sub(r"\1", text)
-        text = self._BOLD_PATTERN.sub(r"\1", text)
-        text = self._ITALIC_PATTERN.sub(r"\1", text)
-        text = self._CODE_PATTERN.sub(r"\1", text)
-        headings = self._HEADING_PATTERN.findall(content)
+        text = self.LINK_PATTERN.sub(r"\1", text)
+        text = self.BOLD_PATTERN.sub(r"\1", text)
+        text = self.ITALIC_PATTERN.sub(r"\1", text)
+        text = self.CODE_PATTERN.sub(r"\1", text)
+        headings = self.HEADING_PATTERN.findall(content)
 
         return SourceDocument(
             content=text,
