@@ -26,18 +26,22 @@ from knowledge.verification.reasoning import (
 class TestDeterministicReasoningProvider:
     def test_consistent_statements(self) -> None:
         provider = DeterministicReasoningProvider()
-        result = provider.validate_consistency([
-            "Python supports async programming.",
-            "Python is dynamically typed.",
-        ])
+        result = provider.validate_consistency(
+            [
+                "Python supports async programming.",
+                "Python is dynamically typed.",
+            ]
+        )
         assert result.is_valid is True
 
     def test_contradictory_statements(self) -> None:
         provider = DeterministicReasoningProvider()
-        result = provider.validate_consistency([
-            "Python is dynamically typed.",
-            "Python is not dynamically typed.",
-        ])
+        result = provider.validate_consistency(
+            [
+                "Python is dynamically typed.",
+                "Python is not dynamically typed.",
+            ]
+        )
         assert result.is_valid is False
 
     def test_claim_supported_by_evidence(self) -> None:
@@ -61,6 +65,34 @@ class TestDeterministicReasoningProvider:
         result = provider.validate_claim("Python is fast.", [])
         assert result.is_valid is False
         assert "No evidence" in result.explanation
+
+    def test_contradiction_via_significant_word_overlap(self) -> None:
+        from knowledge.util import statements_are_contradictory
+
+        result = statements_are_contradictory(
+            "Python is dramatically slow",
+            "Python is not dramatically fast",
+        )
+        assert result is True
+
+    def test_no_contradiction_without_shared_words(self) -> None:
+        from knowledge.util import statements_are_contradictory
+
+        result = statements_are_contradictory(
+            "Python is fast",
+            "Python is not blue",
+        )
+        assert result is False
+
+    def test_reasoning_detects_word_overlap_contradiction(self) -> None:
+        provider = DeterministicReasoningProvider()
+        result = provider.validate_consistency(
+            [
+                "Python is dramatically slow",
+                "Python is not dramatically fast",
+            ]
+        )
+        assert result.is_valid is False
 
 
 class TestSemanticValidationPass:
@@ -101,12 +133,12 @@ class TestSemanticValidationPass:
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
         # Should be no errors or warnings for evidence
         errors_or_warnings = [
-            d for d in result.diagnostics
-            if d.severity in (Severity.ERROR, Severity.WARNING)
+            d for d in result.diagnostics if d.severity in (Severity.ERROR, Severity.WARNING)
         ]
         # Note: there may still be suggestions about descriptions, etc.
         ev_issues = [
-            d for d in errors_or_warnings
+            d
+            for d in errors_or_warnings
             if "evidence" in d.message.lower() or "fact" in d.message.lower()
         ]
         assert len(ev_issues) == 0
@@ -144,7 +176,7 @@ class TestSemanticValidationPass:
 
 
 class TestOntologyValidationPass:
-    def _setup_passer(self) -> PassManager:
+    def setup_passer(self) -> PassManager:
         passer = PassManager()
         passer.register(SemanticValidationPass())
         passer.register(EvidenceValidationPass())
@@ -161,7 +193,7 @@ class TestOntologyValidationPass:
                 id="rel_001",
             )
         )
-        passer = self._setup_passer()
+        passer = self.setup_passer()
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
         warnings = [d for d in result.diagnostics if d.severity == Severity.WARNING]
         assert any("unknown relationship" in d.message.lower() for d in warnings)
@@ -184,7 +216,7 @@ class TestOntologyValidationPass:
                 id="rel_002",
             )
         )
-        passer = self._setup_passer()
+        passer = self.setup_passer()
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
         warnings = [d for d in result.diagnostics if d.severity == Severity.WARNING]
         assert any("duplicate relationship" in d.message.lower() for d in warnings)
@@ -199,10 +231,11 @@ class TestOntologyValidationPass:
                 id="rel_001",
             )
         )
-        passer = self._setup_passer()
+        passer = self.setup_passer()
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
         type_warnings = [
-            d for d in result.diagnostics
+            d
+            for d in result.diagnostics
             if d.severity == Severity.WARNING and "relationship type" in d.message
         ]
         # There might be warnings about duplicate, but not about unknown type
@@ -235,10 +268,7 @@ class TestEvidenceValidationPass:
         passer.register(SemanticValidationPass())
         passer.register(EvidenceValidationPass())
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
-        provenance_warnings = [
-            d for d in result.diagnostics
-            if "provenance" in d.message.lower()
-        ]
+        provenance_warnings = [d for d in result.diagnostics if "provenance" in d.message.lower()]
         assert len(provenance_warnings) == 0
 
     def test_fact_with_evidence(self) -> None:
@@ -254,7 +284,8 @@ class TestEvidenceValidationPass:
         passer.register(EvidenceValidationPass())
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
         evidence_warnings = [
-            d for d in result.diagnostics
+            d
+            for d in result.diagnostics
             if "evidence" in d.message.lower() and "no evidence" in d.message.lower()
         ]
         assert len(evidence_warnings) == 0
@@ -268,8 +299,7 @@ class TestEvidenceValidationPass:
         result = passer.execute(graph, phases=[Phase.VERIFICATION])
         # Fact-without-evidence warnings are from SemanticValidationPass
         evidence_warnings = [
-            d for d in result.diagnostics
-            if "no supporting evidence" in d.message.lower()
+            d for d in result.diagnostics if "no supporting evidence" in d.message.lower()
         ]
         assert len(evidence_warnings) >= 1
 

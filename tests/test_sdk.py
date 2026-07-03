@@ -10,7 +10,7 @@ from knowledge.exceptions import (
     ParseError,
     UnsupportedSourceError,
 )
-from knowledge.models import Entity, KnowledgeGraph
+from knowledge.models import Concept, Entity, Fact, KnowledgeGraph
 from knowledge.passes.scoring_pass import KnowledgeScore
 
 
@@ -65,6 +65,62 @@ class TestKnowledge:
         knowledge = Knowledge()
         with pytest.raises(UnsupportedSourceError):
             knowledge.create("https://example.com")
+
+    def test_verify_delegate(self) -> None:
+        knowledge = Knowledge()
+        doc = knowledge.create("Python is a language.", verify=True)
+        result = knowledge.verify(doc)
+        assert isinstance(result, VerificationResult)
+
+    def test_delete_delegate(self) -> None:
+        from knowledge.models import Relationship
+
+        knowledge = Knowledge()
+        graph = KnowledgeGraph()
+        graph = graph.add_entity(Entity(name="A", id="e1"))
+        graph = graph.add_entity(Entity(name="B", id="e2"))
+        graph = graph.add_relationship(
+            Relationship(source_id="e1", target_id="e2", relationship_type="related", id="r1")
+        )
+        doc = OKFDocument(graph=graph)
+        doc = knowledge.delete(doc, entity_id="e1")
+        assert "e1" not in doc.graph.entities
+        assert "r1" not in doc.graph.relationships
+
+    def test_inspect_delegate(self) -> None:
+        knowledge = Knowledge()
+        doc = knowledge.create("Python is a language.", verify=False)
+        info = knowledge.inspect(doc)
+        assert info["entity_count"] > 0
+
+    def test_score_delegate(self) -> None:
+        knowledge = Knowledge()
+        doc = knowledge.create("Python is a language.", verify=False)
+        score = knowledge.score(doc)
+        assert isinstance(score, KnowledgeScore)
+
+    def test_diff_delegate(self) -> None:
+        knowledge = Knowledge()
+        doc_a = knowledge.create("Python is a language.", verify=False)
+        doc_b = knowledge.create("JavaScript is a language.", verify=False)
+        changes = knowledge.diff(doc_a, doc_b)
+        assert "entities_added" in changes
+
+    def test_merge_delegate(self) -> None:
+        knowledge = Knowledge()
+        doc_a = knowledge.create("Python is a language.", verify=False)
+        doc_b = knowledge.create("JavaScript is a language.", verify=False)
+        merged = knowledge.merge(doc_a, doc_b)
+        assert isinstance(merged, OKFDocument)
+        assert len(merged.graph.entities) >= len(doc_a.graph.entities)
+
+    def test_read_malformed_content(self) -> None:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write("## Foo: bar\n  id: x\n")
+            fname = f.name
+        knowledge = Knowledge()
+        with pytest.raises(ParseError, match="Failed to parse"):
+            knowledge.read(fname)
 
 
 class TestOKFDocument:
@@ -137,6 +193,20 @@ class TestOKFDocument:
         doc = OKFDocument(graph=graph)
         doc = doc.delete(relationship_id="rel_001")
         assert "rel_001" not in doc.graph.relationships
+
+    def test_delete_fact(self) -> None:
+        graph = KnowledgeGraph()
+        graph = graph.add_fact(Fact(statement="Python is a language.", id="f1"))
+        doc = OKFDocument(graph=graph)
+        doc = doc.delete(fact_id="f1")
+        assert "f1" not in doc.graph.facts
+
+    def test_delete_concept(self) -> None:
+        graph = KnowledgeGraph()
+        graph = graph.add_concept(Concept(name="Programming", id="c1"))
+        doc = OKFDocument(graph=graph)
+        doc = doc.delete(concept_id="c1")
+        assert "c1" not in doc.graph.concepts
 
     def test_delete_entity_removes_related_relationships(self) -> None:
         from knowledge.models import Relationship

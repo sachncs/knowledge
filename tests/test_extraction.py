@@ -50,8 +50,7 @@ class TestEntityExtractor:
     def test_extracts_capitalized_phrases(self) -> None:
         extractor = EntityExtractor()
         content = (
-            "Python is a language. JavaScript is also a language. "
-            "Both are used in Web Development."
+            "Python is a language. JavaScript is also a language. Both are used in Web Development."
         )
         entities = extractor.extract(content, "test.md")
         names = [e.name for e in entities]
@@ -123,8 +122,7 @@ class TestEvidenceExtractor:
     def test_skips_short_paragraphs(self) -> None:
         extractor = EvidenceExtractor()
         content = (
-            "Short.\n\nThis is a longer paragraph with "
-            "meaningful content for evidence extraction."
+            "Short.\n\nThis is a longer paragraph with meaningful content for evidence extraction."
         )
         evidence = extractor.extract(content, "test.md")
         assert all(len(e.content) >= 20 for e in evidence)
@@ -198,8 +196,7 @@ class TestExtractionPass:
         config = {
             "extraction.pipeline": {
                 "content": (
-                    "# Knowledge\n\nPython is a language. "
-                    "**JavaScript** is also a language."
+                    "# Knowledge\n\nPython is a language. **JavaScript** is also a language."
                 ),
                 "source": "test.md",
                 "format": "markdown",

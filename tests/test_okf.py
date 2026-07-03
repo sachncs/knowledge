@@ -385,7 +385,7 @@ class TestOKFRoundTrip:
         parser = OKFParser()
         first = parser.parse(okf)
         second = parser.parse(okf)
-        assert _semantic_eq(first, second)
+        assert semantic_eq(first, second)
 
     def test_cycle_detection_invalid_type(self) -> None:
         """Parser raises ParseError for invalid section types."""
@@ -444,7 +444,7 @@ class TestProvenanceMetadataRoundTrip:
         assert restored.entities["e1"].provenance is None
 
 
-def _semantic_dump(graph: KnowledgeGraph) -> dict:
+def semantic_dump(graph: KnowledgeGraph) -> dict:
     """Strip ephemeral timestamp fields for semantic comparison."""
     data = graph.model_dump()
     for collection in data.values():
@@ -457,8 +457,8 @@ def _semantic_dump(graph: KnowledgeGraph) -> dict:
     return data
 
 
-def _semantic_eq(a: KnowledgeGraph, b: KnowledgeGraph) -> bool:
-    return _semantic_dump(a) == _semantic_dump(b)
+def semantic_eq(a: KnowledgeGraph, b: KnowledgeGraph) -> bool:
+    return semantic_dump(a) == semantic_dump(b)
 
 
 @pytest.fixture
@@ -514,4 +514,4 @@ class TestComplexOKF:
         original = OKFParser().parse(complex_okf)
         okf = OKFSerializer().serialize(original)
         restored = OKFParser().parse(okf)
-        assert _semantic_eq(original, restored)
+        assert semantic_eq(original, restored)

@@ -1,13 +1,16 @@
 """Tests for the CLI."""
 
+import os
 import tempfile
 
-from knowledge.cli import build_parser
+import pytest
+
+from knowledge.cli import build_parser, main
 from knowledge.models import Entity, KnowledgeGraph
 from knowledge.okf import OKFSerializer
 
 
-def _run_cmd(args: list[str]) -> None:
+def run_cmd(args: list[str]) -> None:
     """Run a CLI command by parsing args and calling the handler directly."""
     parser = build_parser()
     parsed = parser.parse_args(args)
@@ -16,15 +19,15 @@ def _run_cmd(args: list[str]) -> None:
 
 class TestCLICommands:
     def test_create_text(self) -> None:
-        _run_cmd(["create", "Python is a language.", "--no-verify"])
+        run_cmd(["create", "Python is a language.", "--no-verify"])
 
     def test_create_markdown(self) -> None:
-        _run_cmd(["create", "Python is a language.", "-f", "markdown", "--no-verify"])
+        run_cmd(["create", "Python is a language.", "-f", "markdown", "--no-verify"])
 
     def test_create_with_output(self) -> None:
         with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
             fname = f.name
-        _run_cmd(["create", "Python is a language.", "-o", fname, "--no-verify"])
+        run_cmd(["create", "Python is a language.", "-o", fname, "--no-verify"])
 
     def test_read(self) -> None:
         graph = KnowledgeGraph()
@@ -34,7 +37,7 @@ class TestCLICommands:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             fname = f.name
-        _run_cmd(["read", fname])
+        run_cmd(["read", fname])
 
     def test_inspect(self) -> None:
         graph = KnowledgeGraph()
@@ -44,7 +47,7 @@ class TestCLICommands:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             fname = f.name
-        _run_cmd(["inspect", fname])
+        run_cmd(["inspect", fname])
 
     def test_score(self) -> None:
         graph = KnowledgeGraph()
@@ -54,7 +57,7 @@ class TestCLICommands:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             fname = f.name
-        _run_cmd(["score", fname])
+        run_cmd(["score", fname])
 
     def test_verify(self) -> None:
         graph = KnowledgeGraph()
@@ -64,7 +67,7 @@ class TestCLICommands:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             fname = f.name
-        _run_cmd(["verify", fname])
+        run_cmd(["verify", fname])
 
     def test_diff(self) -> None:
         graph_a = KnowledgeGraph()
@@ -80,7 +83,7 @@ class TestCLICommands:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content_b)
             fname_b = f.name
-        _run_cmd(["diff", fname_a, fname_b])
+        run_cmd(["diff", fname_a, fname_b])
 
     def test_update(self) -> None:
         graph = KnowledgeGraph()
@@ -90,7 +93,7 @@ class TestCLICommands:
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
             fname = f.name
-        _run_cmd(["update", fname, "JavaScript is a language."])
+        run_cmd(["update", fname, "JavaScript is a language."])
 
     def test_unknown_command(self) -> None:
         parser = build_parser()
@@ -98,3 +101,33 @@ class TestCLICommands:
             parser.parse_args(["unknown_command"])
         except SystemExit:
             pass
+
+    def test_update_with_output(self) -> None:
+        graph = KnowledgeGraph()
+        graph = graph.add_entity(Entity(name="Python", id="ent_001"))
+        serializer = OKFSerializer()
+        content = serializer.serialize(graph)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(content)
+            fname = f.name
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as out:
+            outname = out.name
+        run_cmd(["update", fname, "JavaScript is a language.", "-o", outname])
+        assert os.path.exists(outname)
+
+    def test_verify_with_output(self) -> None:
+        graph = KnowledgeGraph()
+        graph = graph.add_entity(Entity(name="Python", id="ent_001"))
+        serializer = OKFSerializer()
+        content = serializer.serialize(graph)
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(content)
+            fname = f.name
+        with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as out:
+            outname = out.name
+        run_cmd(["verify", fname, "-o", outname])
+        assert os.path.exists(outname)
+
+    def test_main_catches_exceptions(self) -> None:
+        with pytest.raises(SystemExit):
+            main(["create", "http://invalid-source"])

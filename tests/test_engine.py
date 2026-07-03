@@ -52,10 +52,7 @@ class TestVerificationEngine:
         engine = VerificationEngine()
         result = engine.verify(graph)
         assert len(result.diagnostics) > 0
-        evidence_warnings = [
-            d for d in result.diagnostics
-            if "evidence" in d.message.lower()
-        ]
+        evidence_warnings = [d for d in result.diagnostics if "evidence" in d.message.lower()]
         assert len(evidence_warnings) > 0
 
     def test_verify_with_repair_attaches_provenance(self) -> None:
