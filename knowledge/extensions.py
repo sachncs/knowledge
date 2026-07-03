@@ -35,6 +35,15 @@ class ExtensionConfig:
 
     @classmethod
     def from_dict(cls, config: dict[str, Any]) -> ExtensionConfig:
+        """Create an ExtensionConfig from a dictionary.
+
+        Args:
+            config: Dictionary with optional keys ``enabled_passes``,
+                ``disabled_passes``, and ``pass_config``.
+
+        Returns:
+            A new ExtensionConfig instance.
+        """
         return cls(
             enabled_passes=config.get("enabled_passes", []),
             disabled_passes=config.get("disabled_passes", []),
@@ -53,7 +62,7 @@ class ExtensionRegistry:
     ENTRY_POINT_GROUP = "knowledge.passes"
 
     def __init__(self) -> None:
-        self._plugins: dict[str, type[CompilerPass]] = {}
+        self.plugins: dict[str, type[CompilerPass]] = {}
 
     def discover(self) -> list[str]:
         """Discover plugins via Python entry points.
@@ -66,12 +75,12 @@ class ExtensionRegistry:
             for ep in importlib.metadata.entry_points(group=self.ENTRY_POINT_GROUP):
                 try:
                     pass_cls = ep.load()
-                    if isinstance(pass_cls, type) and issubclass(pass_cls, CompilerPass):
-                        instance = pass_cls()
-                        self._plugins[instance.id] = pass_cls
-                        discovered.append(instance.id)
-                except Exception:
-                    pass
+                except (importlib.metadata.PackageNotFoundError, TypeError, AttributeError):
+                    continue
+                if isinstance(pass_cls, type) and issubclass(pass_cls, CompilerPass):
+                    instance = pass_cls()
+                    self.plugins[instance.id] = pass_cls
+                    discovered.append(instance.id)
         except importlib.metadata.PackageNotFoundError:
             pass
         return discovered
@@ -79,7 +88,7 @@ class ExtensionRegistry:
     def register_plugin(self, pass_cls: type[CompilerPass]) -> str:
         """Register a plugin pass class."""
         instance = pass_cls()
-        self._plugins[instance.id] = pass_cls
+        self.plugins[instance.id] = pass_cls
         return instance.id
 
     def apply_to(
@@ -101,7 +110,7 @@ class ExtensionRegistry:
         enabled_set = set(cfg.enabled_passes)
         disabled_set = set(cfg.disabled_passes)
 
-        for pid, pass_cls in self._plugins.items():
+        for pid, pass_cls in self.plugins.items():
             if cfg.enabled_passes and pid not in enabled_set:
                 continue
             if pid in disabled_set:

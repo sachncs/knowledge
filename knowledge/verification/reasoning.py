@@ -11,6 +11,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any
 
+from knowledge.util import statements_are_contradictory
+
 
 @dataclass(frozen=True)
 class ReasoningResult:
@@ -83,11 +85,24 @@ class DeterministicReasoningProvider(ReasoningProvider):
         statements: list[str],
         context: dict[str, Any] | None = None,
     ) -> ReasoningResult:
+        """Check whether a set of statements is internally consistent.
+
+        Uses pairwise contradiction detection via
+        ``statements_are_contradictory``.
+
+        Args:
+            statements: The statements to evaluate.
+            context: Optional contextual information.
+
+        Returns:
+            A ReasoningResult indicating whether the statements are
+            consistent.
+        """
         contradictions: list[str] = []
 
         for i, s1 in enumerate(statements):
             for s2 in statements[i + 1:]:
-                if self._are_contradictory(s1, s2):
+                if statements_are_contradictory(s1, s2):
                     contradictions.append(f"'{s1}' contradicts '{s2}'")
 
         if contradictions:
@@ -109,6 +124,18 @@ class DeterministicReasoningProvider(ReasoningProvider):
         evidence: list[str],
         context: dict[str, Any] | None = None,
     ) -> ReasoningResult:
+        """Check whether a claim is supported by the provided evidence.
+
+        Uses keyword overlap between claim and each evidence string.
+
+        Args:
+            claim: The claim to validate.
+            evidence: Supporting evidence statements.
+            context: Optional contextual information.
+
+        Returns:
+            A ReasoningResult indicating whether the claim is supported.
+        """
         if not evidence:
             return ReasoningResult(
                 is_valid=False,
@@ -139,16 +166,3 @@ class DeterministicReasoningProvider(ReasoningProvider):
             explanation=f"Claim is supported by {supporting} of {len(evidence)} evidence sources.",
             confidence=min(0.5 + 0.1 * supporting, 1.0),
         )
-
-    @staticmethod
-    def _are_contradictory(s1: str, s2: str) -> bool:
-        negativity_words = {"not", "no", "never", "cannot", "doesn't", "isn't", "won't", "don't"}
-        s1_negative = any(w in s1.lower().split() for w in negativity_words)
-        s2_negative = any(w in s2.lower().split() for w in negativity_words)
-
-        if s1_negative != s2_negative:
-            s1_clean = " ".join(w for w in s1.lower().split() if w not in negativity_words)
-            s2_clean = " ".join(w for w in s2.lower().split() if w not in negativity_words)
-            if s1_clean and s2_clean and s1_clean == s2_clean:
-                return True
-        return False

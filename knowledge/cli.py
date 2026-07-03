@@ -12,12 +12,26 @@ from knowledge import Knowledge
 from knowledge.okf import OKFSerializer
 
 
-def _get_knowledge() -> Knowledge:
+def get_knowledge() -> Knowledge:
+    """Create and return a new Knowledge SDK instance.
+
+    Returns:
+        A configured Knowledge instance.
+    """
     return Knowledge()
 
 
 def cmd_create(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Create a new OKF document from source content.
+
+    Args:
+        args: CLI arguments with ``input``, ``format``, ``no_verify``,
+            and ``output`` fields.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc = knowledge.create(args.input, fmt=args.format, verify=not args.no_verify)
     if args.output:
         doc.save(args.output)
@@ -28,7 +42,15 @@ def cmd_create(args: argparse.Namespace) -> None:
 
 
 def cmd_read(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Read and display an OKF document summary.
+
+    Args:
+        args: CLI arguments with ``path`` field.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc = knowledge.read(args.path)
     info = doc.inspect()
     print(f"Entities: {info['entity_count']}")
@@ -41,7 +63,16 @@ def cmd_read(args: argparse.Namespace) -> None:
 
 
 def cmd_update(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Update an existing OKF document with new knowledge.
+
+    Args:
+        args: CLI arguments with ``document``, ``input``, ``format``,
+            and ``output`` fields.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc = knowledge.read(args.document)
     doc = knowledge.update(doc, args.input, fmt=args.format)
     if args.output:
@@ -53,7 +84,16 @@ def cmd_update(args: argparse.Namespace) -> None:
 
 
 def cmd_verify(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Verify an OKF document against quality thresholds.
+
+    Args:
+        args: CLI arguments with ``path``, ``threshold``, and
+            ``output`` fields.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc = knowledge.read(args.path)
     result = doc.verify(threshold=args.threshold)
     print(f"Score: {result.score.overall:.1f}%")
@@ -70,7 +110,15 @@ def cmd_verify(args: argparse.Namespace) -> None:
 
 
 def cmd_inspect(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Inspect an OKF document and print all metadata.
+
+    Args:
+        args: CLI arguments with ``path`` field.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc = knowledge.read(args.path)
     info = doc.inspect()
     for key, value in info.items():
@@ -78,7 +126,15 @@ def cmd_inspect(args: argparse.Namespace) -> None:
 
 
 def cmd_score(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Score an OKF document and print quality metrics.
+
+    Args:
+        args: CLI arguments with ``path`` field.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc = knowledge.read(args.path)
     score = doc.score()
     print(f"Overall:           {score.overall:.1f}%")
@@ -90,7 +146,15 @@ def cmd_score(args: argparse.Namespace) -> None:
 
 
 def cmd_diff(args: argparse.Namespace) -> None:
-    knowledge = _get_knowledge()
+    """Diff two OKF documents and print the changes.
+
+    Args:
+        args: CLI arguments with ``document_a`` and ``document_b`` fields.
+
+    Returns:
+        None.
+    """
+    knowledge = get_knowledge()
     doc_a = knowledge.read(args.document_a)
     doc_b = knowledge.read(args.document_b)
     changes = doc_a.diff(doc_b)
@@ -101,7 +165,12 @@ def cmd_diff(args: argparse.Namespace) -> None:
                 print(f"  {label}: {item}")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser.
+
+    Exposed for testing — tests can call this and invoke ``parsed.func(parsed)``
+    instead of mutating ``sys.argv``.
+    """
     parser = argparse.ArgumentParser(
         description="knowledge — Open Knowledge Format SDK CLI",
     )
@@ -144,7 +213,17 @@ def main() -> None:
     p_diff.add_argument("document_b", help="Second OKF document")
     p_diff.set_defaults(func=cmd_diff)
 
-    args = parser.parse_args()
+    return parser
+
+
+def main(argv: list[str] | None = None) -> None:
+    """CLI entry point.
+
+    Args:
+        argv: Argument list (defaults to ``sys.argv[1:]``).
+    """
+    parser = build_parser()
+    args = parser.parse_args(argv)
     try:
         args.func(args)
     except Exception as e:
