@@ -35,7 +35,7 @@ examples/            # Usage examples
 4. Run `mypy knowledge/` — no type errors.
 5. Update documentation if public APIs change.
 6. Update `CHANGELOG.md` with the change description.
-7. Open a pull request against the `main` branch.
+7. Open a pull request against the `master` branch.
 
 ## Code Style
 
