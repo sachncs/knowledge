@@ -3,14 +3,10 @@
 from knowledge.engine import VerificationEngine, VerificationResult
 from knowledge.exceptions import (
     KnowledgeError,
-    MergeConflictError,
     ParseError,
-    SchemaValidationError,
-    SemanticValidationError,
     UnsupportedSourceError,
-    VerificationError,
 )
-from knowledge.okf import OKFParser, OKFSerializer
+from knowledge.kmd import KMDParser, KMDSerializer
 from knowledge.passes import (
     CompilerPass,
     Diagnostic,
@@ -30,13 +26,9 @@ __all__ = [
     "VerificationResult",
     "KnowledgeError",
     "ParseError",
-    "SchemaValidationError",
-    "SemanticValidationError",
-    "VerificationError",
-    "MergeConflictError",
     "UnsupportedSourceError",
-    "OKFParser",
-    "OKFSerializer",
+    "KMDParser",
+    "KMDSerializer",
     "Phase",
     "CompilerPass",
     "PassResult",

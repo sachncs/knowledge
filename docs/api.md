@@ -10,9 +10,9 @@ from knowledge import Knowledge
 knowledge = Knowledge()
 ```
 
-### `create(input, fmt="text", verify=True)`
+### `create(input, fmt="text")`
 
-Creates a new OKF document from a knowledge source.
+Creates a new OKF document from a knowledge source. Verification runs automatically.
 
 **Parameters:**
 
@@ -20,7 +20,6 @@ Creates a new OKF document from a knowledge source.
 |---|---|---|
 | `input` | `str` | File path or text content. File paths are auto-detected. |
 | `fmt` | `str` | Source format (`"text"`, `"markdown"`). Default: `"text"` |
-| `verify` | `bool` | Run verification after creation. Default: `True` |
 
 **Returns:** `OKFDocument`
 
@@ -29,7 +28,6 @@ Creates a new OKF document from a knowledge source.
 ```python
 doc = knowledge.create("Python is a language.")
 doc = knowledge.create("sources/overview.md")
-doc = knowledge.create("Python is great.", verify=False)
 ```
 
 ### `read(path)`
@@ -50,9 +48,9 @@ Loads an existing OKF Markdown document from disk.
 doc = knowledge.read("knowledge.md")
 ```
 
-### `update(doc, input, fmt="text", verify=True)`
+### `update(doc, input, fmt="text")`
 
-Updates an existing OKF document with additional knowledge.
+Updates an existing OKF document with additional knowledge. Verification runs automatically.
 
 **Parameters:**
 
@@ -61,7 +59,6 @@ Updates an existing OKF document with additional knowledge.
 | `doc` | `OKFDocument` | The document to update. |
 | `input` | `str` | New knowledge source (file path or text). |
 | `fmt` | `str` | Source format (`"text"`, `"markdown"`). Default: `"text"` |
-| `verify` | `bool` | Run verification after update. Default: `True` |
 
 **Returns:** `OKFDocument` (new instance)
 
@@ -181,7 +178,7 @@ The primary object returned by the SDK. All operations produce new instances.
 
 ### `graph`
 
-The underlying `KnowledgeGraph`.
+The underlying `KnowledgeGraph` (read-only property).
 
 ### `source`
 
@@ -206,7 +203,7 @@ result = doc.verify(threshold=95.0)
 
 ### `save(path)`
 
-Writes the document to disk in OKF Markdown format.
+Writes the document to disk in KMD (Knowledge Markdown) format.
 
 **Parameters:**
 
@@ -277,7 +274,7 @@ from both documents are preserved.
 merged = doc_a.merge(doc_b)
 ```
 
-### `update(content, source="unknown", fmt="text", verify=True)`
+### `update(content, source="unknown", fmt="text")`
 
 Updates the document with new knowledge content.
 
@@ -288,8 +285,6 @@ Updates the document with new knowledge content.
 | `content` | `str` | Text content to extract knowledge from. |
 | `source` | `str` | Source identifier for provenance. Default: `"unknown"` |
 | `fmt` | `str` | Input format (`"text"`, `"markdown"`). Default: `"text"` |
-| `verify` | `bool` | Run verification after update. Default: `True` |
-
 **Returns:** `OKFDocument` (new instance)
 
 ```python
@@ -325,11 +320,7 @@ All exceptions inherit from `KnowledgeError`.
 | Exception | Description |
 |---|---|
 | `KnowledgeError` | Base exception for all SDK errors. |
-| `ParseError` | Raised when parsing an OKF document fails. |
-| `SchemaValidationError` | Raised when schema validation fails. |
-| `SemanticValidationError` | Raised when semantic validation fails. |
-| `VerificationError` | Raised when verification fails critically. |
-| `MergeConflictError` | Raised when a merge encounters unresolvable conflicts. |
+| `ParseError` | Raised when parsing a KMD document fails. |
 | `UnsupportedSourceError` | Raised when a source type is not supported. |
 
 ---
