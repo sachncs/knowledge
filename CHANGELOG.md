@@ -121,3 +121,9 @@
 - `32d1d97` (2026-07-03) fix: use StrEnum instead of str+Enum and remove redundant cast
 - `66efd10` (2026-07-03) refactor: drop _pass suffix from pass module filenames
 - `f741e7f` (2026-07-03) refactor: eliminate unnecessary exception handling patterns
+
+### OKF Bundle Example & CI Fixes
+
+- `7d00c2a` (2026-07-04) feat: add Google Python Style Guide OKF bundle example
+- `f38ee07` (2026-07-04) fix: make benchmark tests work without pytest-benchmark
+- `98dccc3` (2026-07-04) docs: fix repository URLs and security contact email
