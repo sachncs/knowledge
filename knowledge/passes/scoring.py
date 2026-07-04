@@ -68,6 +68,8 @@ class ScoringPass(CompilerPass):
         ontology_quality = self.score_ontology(graph, total_elements)
         metadata = self.score_metadata(graph, total_elements)
 
+        # Weights: completeness=25%, consistency=25%,
+        # evidence_quality=20%, ontology_quality=15%, metadata_completeness=15%
         overall = (
             completeness * 0.25
             + consistency * 0.25
