@@ -4,7 +4,7 @@ import tempfile
 
 import pytest
 
-from knowledge import Knowledge, OKFDocument, OKFSerializer
+from knowledge import KMDSerializer, Knowledge, OKFDocument
 from knowledge.engine import VerificationResult
 from knowledge.exceptions import (
     ParseError,
@@ -17,15 +17,10 @@ from knowledge.passes.scoring import KnowledgeScore
 class TestKnowledge:
     def test_create_with_text(self) -> None:
         knowledge = Knowledge()
-        doc = knowledge.create("Python is a programming language.", verify=False)
+        doc = knowledge.create("Python is a programming language.")
         assert isinstance(doc, OKFDocument)
         assert len(doc.graph.entities) > 0
         assert len(doc.graph.facts) > 0
-
-    def test_create_with_verify(self) -> None:
-        knowledge = Knowledge()
-        doc = knowledge.create("Python is a language.", verify=True)
-        assert isinstance(doc, OKFDocument)
         assert doc.last_verification is not None
 
     def test_create_from_file(self) -> None:
@@ -33,14 +28,14 @@ class TestKnowledge:
             f.write("# Knowledge\n\nPython is a language.\n")
             fname = f.name
         knowledge = Knowledge()
-        doc = knowledge.create(fname, verify=False)
+        doc = knowledge.create(fname)
         assert doc.source is not None
         assert len(doc.graph.entities) > 0
 
     def test_read_okf(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -57,7 +52,7 @@ class TestKnowledge:
 
     def test_update(self) -> None:
         knowledge = Knowledge()
-        doc = knowledge.create("Python is a language.", verify=False)
+        doc = knowledge.create("Python is a language.")
         doc = knowledge.update(doc, "JavaScript is for web development.", fmt="text")
         assert len(doc.graph.entities) > 1
 
@@ -68,7 +63,7 @@ class TestKnowledge:
 
     def test_verify_delegate(self) -> None:
         knowledge = Knowledge()
-        doc = knowledge.create("Python is a language.", verify=True)
+        doc = knowledge.create("Python is a language.")
         result = knowledge.verify(doc)
         assert isinstance(result, VerificationResult)
 
@@ -89,27 +84,27 @@ class TestKnowledge:
 
     def test_inspect_delegate(self) -> None:
         knowledge = Knowledge()
-        doc = knowledge.create("Python is a language.", verify=False)
+        doc = knowledge.create("Python is a language.")
         info = knowledge.inspect(doc)
         assert info["entity_count"] > 0
 
     def test_score_delegate(self) -> None:
         knowledge = Knowledge()
-        doc = knowledge.create("Python is a language.", verify=False)
+        doc = knowledge.create("Python is a language.")
         score = knowledge.score(doc)
         assert isinstance(score, KnowledgeScore)
 
     def test_diff_delegate(self) -> None:
         knowledge = Knowledge()
-        doc_a = knowledge.create("Python is a language.", verify=False)
-        doc_b = knowledge.create("JavaScript is a language.", verify=False)
+        doc_a = knowledge.create("Python is a language.")
+        doc_b = knowledge.create("JavaScript is a language.")
         changes = knowledge.diff(doc_a, doc_b)
         assert "entities_added" in changes
 
     def test_merge_delegate(self) -> None:
         knowledge = Knowledge()
-        doc_a = knowledge.create("Python is a language.", verify=False)
-        doc_b = knowledge.create("JavaScript is a language.", verify=False)
+        doc_a = knowledge.create("Python is a language.")
+        doc_b = knowledge.create("JavaScript is a language.")
         merged = knowledge.merge(doc_a, doc_b)
         assert isinstance(merged, OKFDocument)
         assert len(merged.graph.entities) >= len(doc_a.graph.entities)

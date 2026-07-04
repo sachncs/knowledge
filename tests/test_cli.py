@@ -6,8 +6,8 @@ import tempfile
 import pytest
 
 from knowledge.cli import build_parser, main
+from knowledge.kmd import KMDSerializer
 from knowledge.models import Entity, KnowledgeGraph
-from knowledge.okf import OKFSerializer
 
 
 def run_cmd(args: list[str]) -> None:
@@ -19,20 +19,20 @@ def run_cmd(args: list[str]) -> None:
 
 class TestCLICommands:
     def test_create_text(self) -> None:
-        run_cmd(["create", "Python is a language.", "--no-verify"])
+        run_cmd(["create", "Python is a language."])
 
     def test_create_markdown(self) -> None:
-        run_cmd(["create", "Python is a language.", "-f", "markdown", "--no-verify"])
+        run_cmd(["create", "Python is a language.", "-f", "markdown"])
 
     def test_create_with_output(self) -> None:
         with tempfile.NamedTemporaryFile(suffix=".md", delete=False) as f:
             fname = f.name
-        run_cmd(["create", "Python is a language.", "-o", fname, "--no-verify"])
+        run_cmd(["create", "Python is a language.", "-o", fname])
 
     def test_read(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -42,7 +42,7 @@ class TestCLICommands:
     def test_inspect(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -52,7 +52,7 @@ class TestCLICommands:
     def test_score(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -62,7 +62,7 @@ class TestCLICommands:
     def test_verify(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -74,7 +74,7 @@ class TestCLICommands:
         graph_a = graph_a.add_entity(Entity(name="Python", id="ent_001"))
         graph_b = KnowledgeGraph()
         graph_b = graph_b.add_entity(Entity(name="Java", id="ent_002"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content_a = serializer.serialize(graph_a)
         content_b = serializer.serialize(graph_b)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
@@ -88,7 +88,7 @@ class TestCLICommands:
     def test_update(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -105,7 +105,7 @@ class TestCLICommands:
     def test_update_with_output(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)
@@ -118,7 +118,7 @@ class TestCLICommands:
     def test_verify_with_output(self) -> None:
         graph = KnowledgeGraph()
         graph = graph.add_entity(Entity(name="Python", id="ent_001"))
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         content = serializer.serialize(graph)
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
             f.write(content)

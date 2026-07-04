@@ -14,8 +14,8 @@ from knowledge.exceptions import (
     ParseError,
     UnsupportedSourceError,
 )
+from knowledge.kmd import KMDParser, KMDSerializer
 from knowledge.models import KnowledgeGraph
-from knowledge.okf import OKFParser, OKFSerializer
 from knowledge.passes import (
     AliasResolutionPass,
     DuplicateDetectionPass,
@@ -38,22 +38,24 @@ class OKFDocument:
         source: str | None = None,
         engine: VerificationEngine | None = None,
     ) -> None:
-        self.graph = graph
+        self._graph = graph
         self.source = source
         self.engine = engine or VerificationEngine()
         self.last_verification: VerificationResult | None = None
 
+    @property
+    def graph(self) -> KnowledgeGraph:
+        """The underlying KnowledgeGraph (read-only)."""
+        return self._graph
+
     def save(self, path: str) -> None:
-        """Serialize to OKF Markdown and write to a file.
+        """Serialize to KMD and write to a file.
 
         Args:
             path: Filesystem path to write the serialized document to.
-
-        Returns:
-            None
         """
-        serializer = OKFSerializer()
-        content = serializer.serialize(self.graph)
+        serializer = KMDSerializer()
+        content = serializer.serialize(self._graph)
         with open(path, "w", encoding="utf-8") as f:
             f.write(content)
 
@@ -72,11 +74,11 @@ class OKFDocument:
             VerificationResult containing the verified graph and score.
         """
         result = self.engine.verify(
-            self.graph,
+            self._graph,
             threshold=threshold,
             max_iterations=max_iterations,
         )
-        self.graph = result.graph
+        self._graph = result.graph
         self.last_verification = result
         return result
 
@@ -88,7 +90,7 @@ class OKFDocument:
             relationship_count, evidence_count, verification_score,
             and source.
         """
-        g = self.graph
+        g = self._graph
         score = self.last_verification.score if self.last_verification else KnowledgeScore()
         return {
             "entity_count": len(g.entities),
@@ -108,7 +110,7 @@ class OKFDocument:
         """
         from knowledge.passes.scoring import ScoringPass
 
-        result = ScoringPass().execute(self.graph)
+        result = ScoringPass().execute(self._graph)
         return result.score or KnowledgeScore()
 
     def diff(self, other: OKFDocument) -> dict[str, list[str]]:
@@ -120,7 +122,7 @@ class OKFDocument:
         Returns:
             dict mapping difference categories to lists of element IDs.
         """
-        return self.graph.diff(other.graph)
+        return self._graph.diff(other._graph)
 
     def merge(self, other: OKFDocument) -> OKFDocument:
         """Merge another document into this one.
@@ -131,32 +133,28 @@ class OKFDocument:
         Returns:
             A new OKFDocument containing the merged graph.
         """
-        merged = self.graph.merge(other.graph)
+        merged = self._graph.merge(other._graph)
         return OKFDocument(graph=merged, source=self.source, engine=self.engine)
 
-    def update(
-        self, content: str, source: str = "unknown", fmt: str = "text", verify: bool = True
-    ) -> OKFDocument:
+    def update(self, content: str, source: str = "unknown", fmt: str = "text") -> OKFDocument:
         """Extract knowledge from new content and merge it in.
 
         Args:
             content: Raw text or structured content to extract from.
             source: Label identifying the provenance of the content.
             fmt: Format of the input content (e.g. "text", "markdown").
-            verify: Whether to run verification on the updated document.
 
         Returns:
-            A new OKFDocument with the extracted knowledge merged.
+            A verified OKFDocument with the extracted knowledge merged.
         """
         mgr = PassManager()
         mgr.register(ExtractionPass())
         mgr.register(AliasResolutionPass())
         mgr.register(DuplicateDetectionPass())
         config = {"extraction.pipeline": {"content": content, "source": source, "format": fmt}}
-        result = mgr.execute(self.graph, config=config)
+        result = mgr.execute(self._graph, config=config)
         updated = OKFDocument(graph=result.graph, source=self.source, engine=self.engine)
-        if verify:
-            updated.verify()
+        updated.verify()
         return updated
 
     def delete(
@@ -177,10 +175,9 @@ class OKFDocument:
         Returns:
             A new OKFDocument with the specified elements removed.
         """
-        g = self.graph
+        g = self._graph
         if entity_id:
             g = g.remove_entity(entity_id)
-            # Remove related relationships
             for rel in list(g.relationships.values()):
                 if rel.source_id == entity_id or rel.target_id == entity_id:
                     g = g.remove_relationship(rel.id)
@@ -206,14 +203,12 @@ class Knowledge:
         self,
         input: str,
         fmt: str = "text",
-        verify: bool = True,
     ) -> OKFDocument:
-        """Create a new OKF document from a source string or file path.
+        """Create a new verified OKF document from a source string or file path.
 
         Args:
             input: Inline content string, file path, or URI.
             fmt: Format of the input ("text", "markdown", etc.).
-            verify: Whether to run verification on the created document.
 
         Returns:
             A verified OKFDocument.
@@ -228,7 +223,6 @@ class Knowledge:
         ):
             raise UnsupportedSourceError(f"Remote sources not yet supported: {input}")
 
-        # Try as file path first
         try:
             with open(input, encoding="utf-8") as f:
                 content = f.read()
@@ -240,14 +234,14 @@ class Knowledge:
             source = "inline"
 
         doc = OKFDocument(graph=KnowledgeGraph(), source=source, engine=self.engine)
-        doc = doc.update(content, source=source, fmt=fmt, verify=verify)
+        doc = doc.update(content, source=source, fmt=fmt)
         return doc
 
     def read(self, path: str) -> OKFDocument:
-        """Load an existing OKF Markdown document.
+        """Load an existing KMD document.
 
         Args:
-            path: Filesystem path to an OKF Markdown file.
+            path: Filesystem path to a KMD file.
 
         Returns:
             An OKFDocument parsed from the file.
@@ -261,11 +255,11 @@ class Knowledge:
         except FileNotFoundError:
             raise ParseError(f"File not found: {path}")
 
-        parser = OKFParser()
+        parser = KMDParser()
         try:
             graph = parser.parse(content)
         except (ParseError, ValueError) as e:
-            raise ParseError(f"Failed to parse OKF document: {e}")
+            raise ParseError(f"Failed to parse KMD document: {e}")
 
         return OKFDocument(graph=graph, source=path, engine=self.engine)
 
@@ -357,18 +351,15 @@ class Knowledge:
         """
         return a.merge(b)
 
-    def update(
-        self, doc: OKFDocument, input: str, fmt: str = "text", verify: bool = True
-    ) -> OKFDocument:
+    def update(self, doc: OKFDocument, input: str, fmt: str = "text") -> OKFDocument:
         """Update an existing document with new knowledge.
 
         Args:
             doc: The OKFDocument to update.
             input: Raw content string to extract knowledge from.
             fmt: Format of the input content.
-            verify: Whether to run verification on the updated document.
 
         Returns:
             The updated OKFDocument.
         """
-        return doc.update(input, source=doc.source or "unknown", fmt=fmt, verify=verify)
+        return doc.update(input, source=doc.source or "unknown", fmt=fmt)

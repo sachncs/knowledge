@@ -10,7 +10,7 @@ import sys
 import traceback
 
 from knowledge import Knowledge
-from knowledge.okf import OKFSerializer
+from knowledge.kmd import KMDSerializer
 
 
 def get_knowledge() -> Knowledge:
@@ -23,27 +23,24 @@ def get_knowledge() -> Knowledge:
 
 
 def cmd_create(args: argparse.Namespace) -> None:
-    """Create a new OKF document from source content.
+    """Create a new verified OKF document from source content.
 
     Args:
-        args: CLI arguments with ``input``, ``format``, ``no_verify``,
+        args: CLI arguments with ``input``, ``format``,
             and ``output`` fields.
-
-    Returns:
-        None.
     """
     knowledge = get_knowledge()
-    doc = knowledge.create(args.input, fmt=args.format, verify=not args.no_verify)
+    doc = knowledge.create(args.input, fmt=args.format)
     if args.output:
         doc.save(args.output)
         print(f"Created and saved to {args.output}")
     else:
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         print(serializer.serialize(doc.graph))
 
 
 def cmd_read(args: argparse.Namespace) -> None:
-    """Read and display an OKF document summary.
+    """Read and display a KMD document summary.
 
     Args:
         args: CLI arguments with ``path`` field.
@@ -64,7 +61,7 @@ def cmd_read(args: argparse.Namespace) -> None:
 
 
 def cmd_update(args: argparse.Namespace) -> None:
-    """Update an existing OKF document with new knowledge.
+    """Update an existing KMD document with new knowledge.
 
     Args:
         args: CLI arguments with ``document``, ``input``, ``format``,
@@ -80,12 +77,12 @@ def cmd_update(args: argparse.Namespace) -> None:
         doc.save(args.output)
         print(f"Updated and saved to {args.output}")
     else:
-        serializer = OKFSerializer()
+        serializer = KMDSerializer()
         print(serializer.serialize(doc.graph))
 
 
 def cmd_verify(args: argparse.Namespace) -> None:
-    """Verify an OKF document against quality thresholds.
+    """Verify a KMD document against quality thresholds.
 
     Args:
         args: CLI arguments with ``path``, ``threshold``, and
@@ -111,7 +108,7 @@ def cmd_verify(args: argparse.Namespace) -> None:
 
 
 def cmd_inspect(args: argparse.Namespace) -> None:
-    """Inspect an OKF document and print all metadata.
+    """Inspect a KMD document and print all metadata.
 
     Args:
         args: CLI arguments with ``path`` field.
@@ -127,7 +124,7 @@ def cmd_inspect(args: argparse.Namespace) -> None:
 
 
 def cmd_score(args: argparse.Namespace) -> None:
-    """Score an OKF document and print quality metrics.
+    """Score a KMD document and print quality metrics.
 
     Args:
         args: CLI arguments with ``path`` field.
@@ -147,7 +144,7 @@ def cmd_score(args: argparse.Namespace) -> None:
 
 
 def cmd_diff(args: argparse.Namespace) -> None:
-    """Diff two OKF documents and print the changes.
+    """Diff two KMD documents and print the changes.
 
     Args:
         args: CLI arguments with ``document_a`` and ``document_b`` fields.
@@ -173,45 +170,44 @@ def build_parser() -> argparse.ArgumentParser:
     instead of mutating ``sys.argv``.
     """
     parser = argparse.ArgumentParser(
-        description="knowledge — Open Knowledge Format SDK CLI",
+        description="knowledge — Knowledge Markdown (KMD) SDK CLI",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_create = sub.add_parser("create", help="Create a new OKF document")
+    p_create = sub.add_parser("create", help="Create a new KMD document")
     p_create.add_argument("input", help="Source content or file path")
     p_create.add_argument("-f", "--format", default="text", choices=["text", "markdown"])
     p_create.add_argument("-o", "--output", help="Output file path")
-    p_create.add_argument("--no-verify", action="store_true", help="Skip verification")
     p_create.set_defaults(func=cmd_create)
 
-    p_read = sub.add_parser("read", help="Read an existing OKF document")
-    p_read.add_argument("path", help="Path to OKF document")
+    p_read = sub.add_parser("read", help="Read an existing KMD document")
+    p_read.add_argument("path", help="Path to KMD document")
     p_read.set_defaults(func=cmd_read)
 
-    p_update = sub.add_parser("update", help="Update an OKF document with new knowledge")
-    p_update.add_argument("document", help="Path to existing OKF document")
+    p_update = sub.add_parser("update", help="Update a KMD document with new knowledge")
+    p_update.add_argument("document", help="Path to existing KMD document")
     p_update.add_argument("input", help="New source content or file path")
     p_update.add_argument("-f", "--format", default="text", choices=["text", "markdown"])
     p_update.add_argument("-o", "--output", help="Output file path")
     p_update.set_defaults(func=cmd_update)
 
-    p_verify = sub.add_parser("verify", help="Verify an OKF document")
-    p_verify.add_argument("path", help="Path to OKF document")
+    p_verify = sub.add_parser("verify", help="Verify a KMD document")
+    p_verify.add_argument("path", help="Path to KMD document")
     p_verify.add_argument("-t", "--threshold", type=float, default=80.0, help="Quality threshold")
     p_verify.add_argument("-o", "--output", help="Output file path for repaired document")
     p_verify.set_defaults(func=cmd_verify)
 
-    p_inspect = sub.add_parser("inspect", help="Inspect an OKF document")
-    p_inspect.add_argument("path", help="Path to OKF document")
+    p_inspect = sub.add_parser("inspect", help="Inspect a KMD document")
+    p_inspect.add_argument("path", help="Path to KMD document")
     p_inspect.set_defaults(func=cmd_inspect)
 
-    p_score = sub.add_parser("score", help="Score an OKF document")
-    p_score.add_argument("path", help="Path to OKF document")
+    p_score = sub.add_parser("score", help="Score a KMD document")
+    p_score.add_argument("path", help="Path to KMD document")
     p_score.set_defaults(func=cmd_score)
 
-    p_diff = sub.add_parser("diff", help="Diff two OKF documents")
-    p_diff.add_argument("document_a", help="First OKF document")
-    p_diff.add_argument("document_b", help="Second OKF document")
+    p_diff = sub.add_parser("diff", help="Diff two KMD documents")
+    p_diff.add_argument("document_a", help="First KMD document")
+    p_diff.add_argument("document_b", help="Second KMD document")
     p_diff.set_defaults(func=cmd_diff)
 
     return parser
