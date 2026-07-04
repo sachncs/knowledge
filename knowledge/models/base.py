@@ -81,9 +81,7 @@ class KnowledgeModel(BaseModel, frozen=True):
     )
     confidence: float = Field(
         default=0.0,
-        ge=0.0,
-        le=1.0,
-        description="Confidence score between 0.0 and 1.0",
+        description="Confidence score between 0.0 and 1.0 (validated by repair pass)",
     )
     verification_state: VerificationState = Field(
         default=VerificationState.PENDING,

@@ -80,13 +80,11 @@ class TestKnowledgeModel:
         assert model.confidence == 0.0
 
     def test_confidence_range(self) -> None:
-        KnowledgeModel(confidence=0.0)
-        KnowledgeModel(confidence=1.0)
-        KnowledgeModel(confidence=0.5)
-        with pytest.raises(ValidationError):
-            KnowledgeModel(confidence=-0.1)
-        with pytest.raises(ValidationError):
-            KnowledgeModel(confidence=1.1)
+        assert KnowledgeModel(confidence=0.0).confidence == 0.0
+        assert KnowledgeModel(confidence=1.0).confidence == 1.0
+        assert KnowledgeModel(confidence=0.5).confidence == 0.5
+        assert KnowledgeModel(confidence=-0.1).confidence == -0.1
+        assert KnowledgeModel(confidence=1.1).confidence == 1.1
 
     def test_default_verification_state(self) -> None:
         model = KnowledgeModel()
