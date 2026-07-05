@@ -183,7 +183,17 @@ class BundleSerializer:
 
     @staticmethod
     def yaml_escape(value: str) -> str:
-        return value.replace("\\", "\\\\").replace('"', '\\"')
+        value = value.replace("\\", "\\\\")
+        value = value.replace('"', '\\"')
+        value = value.replace("\n", "\\n")
+        value = value.replace("\r", "\\r")
+        value = value.replace("\t", "\\t")
+        value = re.sub(
+            r"[\x00-\x08\x0b\x0c\x0e-\x1f]",
+            lambda m: f"\\x{ord(m.group(0)):02x}",
+            value,
+        )
+        return value
 
     def write_concept(self, directory: str, concept: Concept) -> None:
         tag_list = (

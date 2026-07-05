@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 import re
 
 import litellm
+from litellm.exceptions import APIError as LLMAPIError
 from pydantic import BaseModel, ValidationError
 
 from knowledge.models import Concept, KnowledgeGraph
+
+logger = logging.getLogger(__name__)
 
 
 class LLMResponse(BaseModel):
@@ -84,8 +88,9 @@ Return exactly this JSON shape:
 
     @staticmethod
     def split_html_headings(text: str) -> list[tuple[str, str, int]]:
+        clean = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
         pattern = r"<h([2-4])(?:[^>]*)>(.*?)</h\1>"
-        matches = list(re.finditer(pattern, text, re.IGNORECASE | re.DOTALL))
+        matches = list(re.finditer(pattern, clean, re.IGNORECASE | re.DOTALL))
         if not matches:
             return []
 
@@ -94,8 +99,8 @@ Return exactly this JSON shape:
             level = int(m.group(1))
             heading = re.sub(r"<[^>]+>", "", m.group(2)).strip()
             content_start = m.end()
-            content_end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
-            content = text[content_start:content_end].strip()
+            content_end = matches[i + 1].start() if i + 1 < len(matches) else len(clean)
+            content = clean[content_start:content_end].strip()
             sections.append((heading, content, level))
         return sections
 
@@ -108,7 +113,7 @@ Return exactly this JSON shape:
 
         sections: list[tuple[str, str, int]] = []
         for i, m in enumerate(matches):
-            heading = m.group(1).strip()
+            heading = re.sub(r"\s+#+\s*$", "", m.group(1)).strip()
             content_start = m.end()
             content_end = matches[i + 1].start() if i + 1 < len(matches) else len(text)
             content = text[content_start:content_end].strip()
@@ -125,7 +130,8 @@ Return exactly this JSON shape:
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.0,
             )
-        except litellm.APIError:  # type: ignore[attr-defined]
+        except LLMAPIError:
+            logger.warning("LLM API error for section '%s'", heading, exc_info=True)
             return None
 
         text = response.choices[0].message.content
@@ -136,6 +142,7 @@ Return exactly this JSON shape:
         try:
             parsed = LLMResponse.model_validate_json(cleaned)
         except (ValidationError, ValueError):
+            logger.warning("Invalid LLM response for section '%s'", heading)
             return None
 
         return Concept(

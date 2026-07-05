@@ -110,11 +110,17 @@ def fetch_url(url: str) -> str:
             req = Request(url, headers={"User-Agent": USER_AGENT})
             with urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
                 content_length = resp.headers.get("Content-Length")
-                if content_length and int(content_length) > MAX_BODY_SIZE:
-                    raise FetchError(
-                        f"Response too large: {content_length} bytes "
-                        f"(max {MAX_BODY_SIZE} bytes)"
-                    )
+                if content_length is not None:
+                    try:
+                        cl = int(content_length)
+                    except (ValueError, TypeError):
+                        pass
+                    else:
+                        if cl > MAX_BODY_SIZE:
+                            raise FetchError(
+                                f"Response too large: {cl} bytes "
+                                f"(max {MAX_BODY_SIZE} bytes)"
+                            )
 
                 raw: bytes = resp.read(MAX_BODY_SIZE + 1024)
 
@@ -128,6 +134,7 @@ def fetch_url(url: str) -> str:
                 charset = "utf-8"
                 if "charset=" in content_type:
                     charset = content_type.split("charset=")[-1].split(";")[0].strip()
+                    charset = charset.strip("\"'")
                 return raw.decode(charset, errors="replace")
 
         except urllib.error.HTTPError as e:
