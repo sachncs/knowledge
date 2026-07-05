@@ -68,42 +68,50 @@ section-aware HTML source reader in v0.1.0.
 - Writes `type: concept` for leaf entries, `type: index` for directory
   indexes, `type: bundle` for the root index.
 
-### Section-aware HTML source reader (`knowledge/extraction/sources.py`)
+### Section-aware source reader (`knowledge/llm/extractor.py`)
 
-- `HTMLSourceReader` uses Python's `html.parser.HTMLParser` to split HTML
-  content by `<h2>`, `<h3>`, `<h4>` headings.
-- Returns a list of `(heading_text, section_content_plaintext, heading_level)`
-  tuples.
-- Each section becomes a separate `Concept` with section-aware naming.
+- `LLMExtractor` splits source text by top-level headings (HTML `<h2>` or
+  markdown `##`) using regex, then sends each section to an LLM via litellm.
+- The LLM converts the raw section content (HTML or markdown) into clean
+  Markdown and returns a structured JSON concept object with `id`, `name`,
+  `description`, `tags`, and `level`.
+- Supports any litellm-compatible model (OpenAI, Anthropic, Ollama, vLLM, etc.).
+- Falls back to treating the entire document as a single section when no
+  heading structure is detected.
 
 ### SDK integration (`knowledge/sdk.py`)
 
-- `OKFDocument.save(path, fmt="kmd")`: accepts `fmt="bundle"` for directory
-  output, `fmt="kmd"` for flat KMD (default).
-- `Knowledge.create(input)`: if the source is HTML with section headings,
-  creates one concept per section and writes the full bundle.
+- `Knowledge.create(source)`: fetches or reads the source, delegates to
+  `LLMExtractor.extract()`, and returns a `KnowledgeGraph`.
+- `Knowledge.create_bundle(source, output_dir)`: fetches/reads, extracts,
+  and serializes via `BundleSerializer`.
+- `Knowledge.update(source, bundle_dir)`: re-extracts from source and
+  overwrites the existing bundle.
+- `Knowledge.remove(concept_ids, bundle_dir)`: reads the existing bundle,
+  removes the specified concept IDs, and re-serializes.
 
 ### CLI (`knowledge/cli.py`)
 
-- `knowledge create <input> -o <dir> --format bundle` writes OKF bundle.
-- `knowledge create <input> -o <file>.kmd` (default) writes flat KMD.
-- `knowledge create <input> -o <dir>` auto-selects bundle when `-o` looks
-  like a directory or has no extension.
+- `knowledge create <input> <output>` extracts concepts and writes OKF bundle.
+- `knowledge update <input> <bundle_dir>` re-extracts and overwrites an
+  existing bundle.
+- `knowledge remove <concept_id>... <bundle_dir>` removes specific concepts
+  from a bundle by their IDs.
+- All commands accept `--model` to select the LLM (default `gpt-4o`).
 
 ## Consequences
 
 ### Positive
 
-- `knowledge create <url> -o examples/` produces the documented bundle format.
-- Section-aware extraction produces meaningful concepts from HTML sources.
-- The existing `KnowledgeGraph` model, `ExtractionPass`, and extraction
-  pipeline are unchanged — only serialization and source reading are added.
-- The bundle format is validated by the example at `examples/`.
+- `knowledge create <url> <dir>` produces the documented bundle format.
+- LLM-based extraction produces high-quality concepts from HTML sources,
+  converting HTML formatting to clean Markdown faithfully.
+- The `KnowledgeGraph` model is format-agnostic; `BundleSerializer` is a pure
+  serialization layer.
 
 ### Negative
 
-- `OKFDocument.save()` gains a format parameter, changing its public API.
 - Bundle output requires filesystem directory I/O, which is more complex than
   flat file writes.
-- HTML section parsing is heuristic — not all HTML sources have clean
-  heading structures.
+- LLM extraction requires API access (OpenAI, Anthropic, or local model via
+  Ollama) and adds latency and per-request cost compared to rule-based parsing.
