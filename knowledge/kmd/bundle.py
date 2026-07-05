@@ -208,6 +208,8 @@ class BundleSerializer:
 
         for match in re.finditer(r"\(([^)]+)\)", content):
             link = match.group(1)
+            if link.startswith(("http://", "https://", "ftp://")):
+                continue
             resolved = os.path.normpath(os.path.join(base_dir, link))
             if os.path.isfile(resolved):
                 files.add(resolved)

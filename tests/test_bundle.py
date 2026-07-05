@@ -150,6 +150,26 @@ class TestBundleSerializer:
         assert BundleSerializer.dir_title("rules/language") == "Rules / Language"
         assert BundleSerializer.dir_title("api-v2") == "Api V2"
 
+    def test_validate_skips_absolute_urls(self) -> None:
+        """links_in_index should skip http:// and https:// URLs."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            index_content = (
+                "---\nid: test\ntitle: Test\ntype: index\n---\n\n"
+                "- [Google](https://google.com)\n"
+                "- [Local](local.md)\n"
+            )
+            index_path = os.path.join(tmpdir, "index.md")
+            with open(index_path, "w", encoding="utf-8") as f:
+                f.write(index_content)
+            # Create the local file so that only the URL is the unknown
+            local_path = os.path.join(tmpdir, "local.md")
+            with open(local_path, "w", encoding="utf-8") as f:
+                f.write("---\nid: local\ntitle: Local\ntype: concept\n---\n\ncontent\n")
+            issues = BundleSerializer().validate(tmpdir)
+            # No "Broken link" about google.com
+            url_issues = [i for i in issues if "google.com" in i or "google" in i]
+            assert not url_issues, f"Should skip absolute URLs: {url_issues}"
+
     def test_yaml_escape_round_trip(self) -> None:
         inputs = [
             "plain",
