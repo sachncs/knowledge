@@ -33,3 +33,7 @@ site/
 
 # Project-specific
 SPEC.md
+
+# Test artifacts
+style-guide/
+examples/
