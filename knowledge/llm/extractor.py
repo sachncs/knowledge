@@ -10,7 +10,7 @@ from pydantic import BaseModel, ValidationError
 from knowledge.models import Concept, KnowledgeGraph
 
 
-class _LLMResponse(BaseModel):
+class LLMResponse(BaseModel):
     """Expected JSON shape from the LLM for a single section."""
 
     id: str
@@ -57,16 +57,16 @@ Return exactly this JSON shape:
     def extract(self, source_text: str, source_url: str = "") -> KnowledgeGraph:
         """Extract concepts from source text, returning a KnowledgeGraph."""
         graph = KnowledgeGraph()
-        sections = self._split_sections(source_text)
+        sections = self.split_sections(source_text)
 
         for heading, content, level in sections:
-            concept = self._extract_section(heading, content, level)
+            concept = self.extract_section(heading, content, level)
             if concept is not None:
                 graph = graph.add_concept(concept)
 
         return graph
 
-    def _split_sections(
+    def split_sections(
         self, text: str
     ) -> list[tuple[str, str, int]]:
         """Split text into (heading, content, level) tuples.
@@ -74,18 +74,18 @@ Return exactly this JSON shape:
         Handles both HTML and Markdown sources. Falls back to treating
         the entire content as a single section.
         """
-        sections = self._split_html_headings(text)
+        sections = self.split_html_headings(text)
         if sections:
             return sections
 
-        sections = self._split_markdown_headings(text)
+        sections = self.split_markdown_headings(text)
         if sections:
             return sections
 
         return [("Document", text, 1)]
 
     @staticmethod
-    def _split_html_headings(text: str) -> list[tuple[str, str, int]]:
+    def split_html_headings(text: str) -> list[tuple[str, str, int]]:
         pattern = r"<h([2-4])(?:[^>]*)>(.*?)</h\1>"
         matches = list(re.finditer(pattern, text, re.IGNORECASE | re.DOTALL))
         if not matches:
@@ -102,7 +102,7 @@ Return exactly this JSON shape:
         return sections
 
     @staticmethod
-    def _split_markdown_headings(text: str) -> list[tuple[str, str, int]]:
+    def split_markdown_headings(text: str) -> list[tuple[str, str, int]]:
         pattern = r"^## (.+)$"
         matches = list(re.finditer(pattern, text, re.MULTILINE))
         if not matches:
@@ -117,7 +117,7 @@ Return exactly this JSON shape:
             sections.append((heading, content, 2))
         return sections
 
-    def _extract_section(
+    def extract_section(
         self, heading: str, content: str, level: int
     ) -> Concept | None:
         prompt = self.EXTRACTION_PROMPT.format(
@@ -136,9 +136,9 @@ Return exactly this JSON shape:
         if text is None:
             return None
 
-        cleaned = _strip_json_fence(text)
+        cleaned = strip_json_fence(text)
         try:
-            parsed = _LLMResponse.model_validate_json(cleaned)
+            parsed = LLMResponse.model_validate_json(cleaned)
         except (ValidationError, ValueError):
             return None
 
@@ -150,7 +150,7 @@ Return exactly this JSON shape:
         )
 
 
-def _strip_json_fence(text: str) -> str:
+def strip_json_fence(text: str) -> str:
     """Remove markdown code fences wrapping a JSON block."""
     text = text.strip()
     if text.startswith("```"):

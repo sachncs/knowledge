@@ -3,10 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 import time
 
 from knowledge import Knowledge
+
+logger = logging.getLogger(__name__)
 
 
 def cmd_create(args: argparse.Namespace) -> None:
@@ -16,23 +19,23 @@ def cmd_create(args: argparse.Namespace) -> None:
     if len(source_label) > 50:
         source_label = source_label[:47] + "..."
 
-    print(f"Creating bundle from {source_label}...", end=" ", flush=True)
+    logger.info("Creating bundle from %s...", source_label)
     t0 = time.time()
     count = knowledge.create_bundle(args.input, args.output)
     elapsed = time.time() - t0
-    print(f"done ({elapsed:.1f}s)")
-    print(f"Wrote {count} concepts to {args.output}")
+    logger.info("done (%.1fs)", elapsed)
+    logger.info("Wrote %d concepts to %s", count, args.output)
 
     if args.validate:
         from knowledge.kmd.bundle import BundleSerializer
 
         issues = BundleSerializer().validate(args.output)
         if issues:
-            print(f"Validation: {len(issues)} issue(s)")
+            logger.warning("Validation: %d issue(s)", len(issues))
             for issue in issues:
-                print(f"  ! {issue}")
+                logger.warning("  ! %s", issue)
         else:
-            print("Validation: OK")
+            logger.info("Validation: OK")
 
 
 def cmd_update(args: argparse.Namespace) -> None:
@@ -42,12 +45,12 @@ def cmd_update(args: argparse.Namespace) -> None:
     if len(source_label) > 50:
         source_label = source_label[:47] + "..."
 
-    print(f"Updating bundle from {source_label}...", end=" ", flush=True)
+    logger.info("Updating bundle from %s...", source_label)
     t0 = time.time()
     count = knowledge.update(args.input, args.bundle_dir)
     elapsed = time.time() - t0
-    print(f"done ({elapsed:.1f}s)")
-    print(f"Wrote {count} concepts to {args.bundle_dir}")
+    logger.info("done (%.1fs)", elapsed)
+    logger.info("Wrote %d concepts to %s", count, args.bundle_dir)
 
 
 def cmd_remove(args: argparse.Namespace) -> None:
@@ -57,12 +60,12 @@ def cmd_remove(args: argparse.Namespace) -> None:
     if len(label) > 50:
         label = label[:47] + "..."
 
-    print(f"Removing concepts [{label}]...", end=" ", flush=True)
+    logger.info("Removing concepts [%s]...", label)
     t0 = time.time()
     count = knowledge.remove(args.concept_ids, args.bundle_dir)
     elapsed = time.time() - t0
-    print(f"done ({elapsed:.1f}s)")
-    print(f"Wrote {count} concepts to {args.bundle_dir}")
+    logger.info("done (%.1fs)", elapsed)
+    logger.info("Wrote %d concepts to %s", count, args.bundle_dir)
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -98,12 +101,17 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> None:
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(message)s",
+        stream=sys.stderr,
+    )
     parser = build_parser()
     args = parser.parse_args(argv)
     try:
         args.func(args)
     except Exception as exc:
-        print(f"Error: {exc}", file=sys.stderr)
+        logger.error(str(exc))
         sys.exit(1)
 
 

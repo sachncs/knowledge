@@ -37,7 +37,7 @@ class Knowledge:
         Raises:
             FetchError: If the source cannot be fetched or read.
         """
-        raw = self._read_source(source)
+        raw = self.read_source(source)
         return LLMExtractor(model=self.model).extract(raw, source_url=source)
 
     def create_bundle(self, source: str, output_dir: str) -> int:
@@ -50,7 +50,7 @@ class Knowledge:
         Returns:
             Number of concept files written.
         """
-        raw = self._read_source(source)
+        raw = self.read_source(source)
         manager = KnowledgeBundleManager(model=self.model)
         return manager.create(raw, output_dir, source_url=source)
 
@@ -64,7 +64,7 @@ class Knowledge:
         Returns:
             Number of concept files written.
         """
-        raw = self._read_source(source)
+        raw = self.read_source(source)
         manager = KnowledgeBundleManager(model=self.model)
         return manager.update(raw, bundle_dir, source_url=source)
 
@@ -82,7 +82,7 @@ class Knowledge:
         return manager.remove(concept_ids, bundle_dir)
 
     @staticmethod
-    def _read_source(source: str) -> str:
+    def read_source(source: str) -> str:
         if source.startswith("http://") or source.startswith("https://"):
             return fetch_url(source)
         if not os.path.isfile(source):

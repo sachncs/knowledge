@@ -45,33 +45,33 @@ class KnowledgeBundleManager:
 
         Returns the number of concept files written.
         """
-        graph = self._read_bundle(bundle_dir)
+        graph = self.read_bundle(bundle_dir)
         for cid in concept_ids:
             graph = graph.remove_concept(cid)
         os.makedirs(bundle_dir, exist_ok=True)
         return BundleSerializer().serialize(graph, bundle_dir)
 
     @staticmethod
-    def _read_bundle(bundle_dir: str) -> KnowledgeGraph:
+    def read_bundle(bundle_dir: str) -> KnowledgeGraph:
         """Read existing bundle files back into a KnowledgeGraph."""
         graph = KnowledgeGraph()
         index_path = os.path.join(bundle_dir, "index.md")
         if not os.path.isfile(index_path):
             raise KnowledgeError(f"No bundle found at {bundle_dir}")
 
-        for root, _dirs, files in os.walk(bundle_dir):
+        for root, dirs, files in os.walk(bundle_dir):
             for file in files:
                 if file == "index.md" or not file.endswith(".md"):
                     continue
                 filepath = os.path.join(root, file)
-                concept = _parse_concept_file(filepath)
+                concept = parse_concept_file(filepath)
                 if concept is not None:
                     graph = graph.add_concept(concept)
 
         return graph
 
 
-def _parse_concept_file(filepath: str) -> Concept | None:
+def parse_concept_file(filepath: str) -> Concept | None:
     """Parse a single concept .md file back into a Concept."""
     try:
         with open(filepath, encoding="utf-8") as f:

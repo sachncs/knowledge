@@ -66,10 +66,10 @@ class BundleSerializer:
             if not raw_entries:
                 continue
             title = self.dir_title(subdir)
-            index_entries = [(cid, name, "") for cid, name, _desc in raw_entries]
+            index_entries = [(cid, name, "") for cid, name, _ in raw_entries]
             self.write_index(target, title, "index", index_entries)
 
-        root_entries = [(cid, name, "") for cid, name, _desc in flat_concepts]
+        root_entries = [(cid, name, "") for cid, name, _ in flat_concepts]
         for subdir in sorted(all_dirs):
             title = self.dir_title(subdir)
             root_entries.append((subdir, title, subdir))
