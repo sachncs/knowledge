@@ -1,1 +1,0 @@
-"""Extraction — HTML section parsing."""

@@ -1,104 +1,148 @@
-"""Minimal SDK — creates OKF bundles from URLs or file paths."""
+"""SDK — creates, updates, and removes OKF bundles from URLs or file paths."""
 
 from __future__ import annotations
 
 import os
-import re
-from urllib.request import urlopen
+import time
+import urllib.error
+from urllib.request import Request, urlopen
 
-from knowledge.extraction.sources import HTMLSourceReader, SourceSection
-from knowledge.kmd.bundle import BundleSerializer
-from knowledge.models import Concept, KnowledgeGraph
+from knowledge.exceptions import FetchError
+from knowledge.llm.extractor import LLMExtractor
+from knowledge.llm.manager import KnowledgeBundleManager
+from knowledge.models import KnowledgeGraph
 
-_HTML_PATTERN = re.compile(r"^\s*(?:<!DOCTYPE\s+html|<html)\s", re.IGNORECASE)
-_H2_PATTERN = re.compile(r"<h2[^>]*>.*?</h2>", re.IGNORECASE | re.DOTALL)
+USER_AGENT = "knowledge-sdk/0.1.0"
+REQUEST_TIMEOUT = 30
+MAX_RETRIES = 3
+RETRY_DELAY = 1.0
+MAX_BODY_SIZE = 50 * 1024 * 1024
 
 
 class Knowledge:
-    """Entry point for creating OKF bundles from sources."""
+    """Entry point for creating, updating, and removing OKF bundles."""
 
-    def __init__(self) -> None:
-        pass
+    def __init__(self, model: str = "gpt-4o") -> None:
+        self.model = model
 
-    def create(self, input: str, path_map: dict[str, str] | None = None) -> KnowledgeGraph:
-        """Fetch and parse content, returning a KnowledgeGraph of section concepts.
+    def create(self, source: str) -> KnowledgeGraph:
+        """Fetch or read source and return a KnowledgeGraph via LLM extraction.
 
         Args:
-            input: URL (http/https) or file path to read.
-            path_map: Optional tag→subdirectory mapping for bundle organization.
+            source: URL (http/https) or file path.
 
         Returns:
-            A KnowledgeGraph with one Concept per HTML section heading.
+            A KnowledgeGraph with one Concept per section.
+
+        Raises:
+            FetchError: If the source cannot be fetched or read.
         """
-        if input.startswith("http://") or input.startswith("https://"):
-            raw = urlopen(input).read().decode("utf-8")
-        else:
-            with open(input, encoding="utf-8") as f:
-                raw = f.read()
+        raw = self._read_source(source)
+        return LLMExtractor(model=self.model).extract(raw, source_url=source)
 
-        if _is_html(raw):
-            return _parse_html(raw, path_map or {})
-
-        raise ValueError("Only HTML sources are supported for bundle creation")
-
-    def create_bundle(
-        self, input: str, output_dir: str, path_map: dict[str, str] | None = None
-    ) -> None:
-        """Create an OKF bundle from a source and write it to a directory.
+    def create_bundle(self, source: str, output_dir: str) -> int:
+        """Create an OKF bundle from a source and write to a directory.
 
         Args:
-            input: URL or file path.
+            source: URL or file path.
             output_dir: Output directory for the bundle.
-            path_map: Optional tag→subdirectory mapping.
+
+        Returns:
+            Number of concept files written.
         """
-        graph = self.create(input, path_map=path_map)
-        os.makedirs(output_dir, exist_ok=True)
-        BundleSerializer(path_map=path_map).serialize(graph, output_dir)
+        raw = self._read_source(source)
+        manager = KnowledgeBundleManager(model=self.model)
+        return manager.create(raw, output_dir, source_url=source)
+
+    def update(self, source: str, bundle_dir: str) -> int:
+        """Re-extract concepts from source and overwrite an existing bundle.
+
+        Args:
+            source: URL or file path.
+            bundle_dir: Existing bundle directory to update.
+
+        Returns:
+            Number of concept files written.
+        """
+        raw = self._read_source(source)
+        manager = KnowledgeBundleManager(model=self.model)
+        return manager.update(raw, bundle_dir, source_url=source)
+
+    def remove(self, concept_ids: list[str], bundle_dir: str) -> int:
+        """Remove specific concepts from an existing bundle by ID.
+
+        Args:
+            concept_ids: One or more concept IDs to remove.
+            bundle_dir: Bundle directory to modify.
+
+        Returns:
+            Number of concept files written.
+        """
+        manager = KnowledgeBundleManager(model=self.model)
+        return manager.remove(concept_ids, bundle_dir)
+
+    @staticmethod
+    def _read_source(source: str) -> str:
+        if source.startswith("http://") or source.startswith("https://"):
+            return fetch_url(source)
+        if not os.path.isfile(source):
+            raise FetchError(f"File not found: {source}")
+        with open(source, encoding="utf-8") as f:
+            return f.read()
 
 
-def _is_html(content: str) -> bool:
-    stripped = content.lstrip()
-    return bool(_HTML_PATTERN.match(stripped)) or bool(_H2_PATTERN.search(content))
+def fetch_url(url: str) -> str:
+    """Fetch a URL with retries, timeout, and user-agent.
 
+    Args:
+        url: The URL to fetch.
 
-def _heading_slug(heading: str) -> str:
-    slug = heading.lower()
-    slug = re.sub(r"^\d+(?:\.\d+)*\s+", "", slug)
-    slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
-    return slug if slug else "section"
+    Returns:
+        The response body as a string.
 
+    Raises:
+        FetchError: If all retries are exhausted or the response is too large.
+    """
+    last_error: Exception | None = None
 
-def _parse_html(raw: str, path_map: dict[str, str]) -> KnowledgeGraph:
-    reader = HTMLSourceReader()
-    sections = reader.read_sections(raw)
+    for attempt in range(MAX_RETRIES):
+        try:
+            req = Request(url, headers={"User-Agent": USER_AGENT})
+            resp = urlopen(req, timeout=REQUEST_TIMEOUT)
 
-    graph = KnowledgeGraph()
+            content_length = resp.headers.get("Content-Length")
+            if content_length and int(content_length) > MAX_BODY_SIZE:
+                resp.close()
+                raise FetchError(
+                    f"Response too large: {content_length} bytes "
+                    f"(max {MAX_BODY_SIZE} bytes)"
+                )
 
-    for section in sections:
-        slug = _heading_slug(section.heading)
-        tags = _section_tags(section, sections)
-        concept = Concept(
-            id=slug,
-            name=section.heading,
-            description=section.content if section.content else None,
-            tags=tags,
-        )
-        graph = graph.add_concept(concept)
+            raw: bytes = resp.read(MAX_BODY_SIZE + 1024)
+            resp.close()
 
-    return graph
+            if len(raw) > MAX_BODY_SIZE:
+                raise FetchError(
+                    f"Response too large: {len(raw)} bytes "
+                    f"(max {MAX_BODY_SIZE} bytes)"
+                )
 
+            content_type = resp.headers.get("Content-Type", "")
+            charset = "utf-8"
+            if "charset=" in content_type:
+                charset = content_type.split("charset=")[-1].split(";")[0].strip()
+            return raw.decode(charset, errors="replace")
 
-def _section_tags(section: SourceSection, all_sections: list[SourceSection]) -> list[str]:
-    tags: list[str] = []
-    if section.level > 2:
-        parent_slug = ""
-        for s in all_sections:
-            if s.level == 2:
-                parent_slug = _heading_slug(s.heading)
-            if s is section:
+        except urllib.error.HTTPError as e:
+            last_error = FetchError(f"HTTP {e.code}: {e.reason} for {url}")
+            if 400 <= e.code < 500 and e.code not in (429,):
                 break
-        if parent_slug:
-            tags.append(parent_slug)
-    else:
-        tags.append(_heading_slug(section.heading))
-    return tags
+
+        except (urllib.error.URLError, OSError, ConnectionError, TimeoutError) as e:
+            last_error = FetchError(f"Connection failed: {e}")
+
+        if attempt < MAX_RETRIES - 1:
+            delay = RETRY_DELAY * (2**attempt)
+            time.sleep(delay)
+
+    raise FetchError(str(last_error)) if last_error else FetchError(f"Failed to fetch {url}")

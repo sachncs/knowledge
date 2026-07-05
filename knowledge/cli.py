@@ -1,31 +1,116 @@
-"""Minimal CLI — only ``create`` for OKF bundles."""
+"""CLI — create, update, and remove commands with progress feedback."""
 
 from __future__ import annotations
 
 import argparse
 import sys
-import traceback
+import time
 
 from knowledge import Knowledge
 
 
 def cmd_create(args: argparse.Namespace) -> None:
-    """Create an OKF bundle from an HTML source."""
+    """Create an OKF bundle from a source with progress feedback."""
+    knowledge = Knowledge(model=args.model)
+    source_label = args.input.split("/")[-1] if "/" in args.input else args.input
+    if len(source_label) > 50:
+        source_label = source_label[:47] + "..."
+
+    print(f"Creating bundle from {source_label}...", end=" ", flush=True)
+    t0 = time.time()
+
+    try:
+        count = knowledge.create_bundle(args.input, args.output)
+    except Exception:
+        print("FAILED")
+        raise
+
+    elapsed = time.time() - t0
+    print(f"done ({elapsed:.1f}s)")
+    print(f"Wrote {count} concepts to {args.output}")
+
+    if args.validate:
+        from knowledge.kmd.bundle import BundleSerializer
+
+        issues = BundleSerializer().validate(args.output)
+        if issues:
+            print(f"Validation: {len(issues)} issue(s)")
+            for issue in issues:
+                print(f"  ! {issue}")
+        else:
+            print("Validation: OK")
+
+
+def cmd_update(args: argparse.Namespace) -> None:
+    """Update an existing OKF bundle by re-extracting from source."""
+    knowledge = Knowledge(model=args.model)
+    source_label = args.input.split("/")[-1] if "/" in args.input else args.input
+    if len(source_label) > 50:
+        source_label = source_label[:47] + "..."
+
+    print(f"Updating bundle from {source_label}...", end=" ", flush=True)
+    t0 = time.time()
+
+    try:
+        count = knowledge.update(args.input, args.bundle_dir)
+    except Exception:
+        print("FAILED")
+        raise
+
+    elapsed = time.time() - t0
+    print(f"done ({elapsed:.1f}s)")
+    print(f"Wrote {count} concepts to {args.bundle_dir}")
+
+
+def cmd_remove(args: argparse.Namespace) -> None:
+    """Remove concepts from an existing OKF bundle."""
     knowledge = Knowledge()
-    knowledge.create_bundle(args.input, args.output)
-    print(f"Created bundle at {args.output}")
+    label = ", ".join(args.concept_ids)
+    if len(label) > 50:
+        label = label[:47] + "..."
+
+    print(f"Removing concepts [{label}]...", end=" ", flush=True)
+    t0 = time.time()
+
+    try:
+        count = knowledge.remove(args.concept_ids, args.bundle_dir)
+    except Exception:
+        print("FAILED")
+        raise
+
+    elapsed = time.time() - t0
+    print(f"done ({elapsed:.1f}s)")
+    print(f"Wrote {count} concepts to {args.bundle_dir}")
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="knowledge — OKF bundle creation tool",
     )
+    parser.add_argument(
+        "--model",
+        default="gpt-4o",
+        help="LLM model to use (default: gpt-4o)",
+    )
     sub = parser.add_subparsers(dest="command", required=True)
 
     p_create = sub.add_parser("create", help="Create an OKF bundle from a URL or file")
     p_create.add_argument("input", help="URL or file path")
     p_create.add_argument("output", help="Output directory for the bundle")
+    p_create.add_argument(
+        "--validate", action="store_true", help="Validate bundle after writing"
+    )
     p_create.set_defaults(func=cmd_create)
+
+    p_update = sub.add_parser("update", help="Update an existing bundle from a source")
+    p_update.add_argument("input", help="URL or file path")
+    p_update.add_argument("bundle_dir", help="Existing bundle directory to update")
+    p_update.set_defaults(func=cmd_update)
+
+    p_remove = sub.add_parser("remove", help="Remove concepts from a bundle")
+    p_remove.add_argument("concept_ids", nargs="+", help="Concept ID(s) to remove")
+    p_remove.add_argument("bundle_dir", help="Bundle directory to modify")
+    p_remove.set_defaults(func=cmd_remove)
 
     return parser
 
@@ -35,8 +120,8 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
     try:
         args.func(args)
-    except Exception:
-        traceback.print_exc(file=sys.stderr)
+    except Exception as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
 
 
