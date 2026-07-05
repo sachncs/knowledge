@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+__all__ = [
+    "Concept",
+    "KnowledgeGraph",
+]
+
 
 class Concept(BaseModel):
     """A section or concept extracted from a source document."""
