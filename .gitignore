@@ -37,3 +37,6 @@ SPEC.md
 # Test artifacts
 style-guide/
 examples/
+
+# Generated bundles
+google-python-style-guide/
