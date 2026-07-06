@@ -112,8 +112,8 @@ Set the API key for your provider as an environment variable:
 |------------|--------------------|------------------------------------|
 | OpenAI     | `OPENAI_API_KEY`   | `gpt-4o`                           |
 | Anthropic  | `ANTHROPIC_API_KEY`| `claude-3-opus-20240229`           |
-| Ollama     | *(none)*           | `ollama/llama3`                    |
-| vLLM       | *(custom)*         | `open-mistral-nemo` (with custom endpoint) |
+| Ollama     | `OLLAMA_HOST`      | `ollama/llama3` (default `http://localhost:11434`) |
+| vLLM       | *(custom endpoint)*| `open-mistral-nemo` (set `api_base` in litellm) |
 
 Pass the model via the `--model` CLI flag or `Knowledge(model=...)`.
 
