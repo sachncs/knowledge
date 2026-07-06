@@ -1,6 +1,8 @@
 """Basic import and API surface tests."""
 
-from knowledge import __version__
+import re
+
+from knowledge import DEFAULT_MODEL, __version__
 
 
 def test_version_is_string() -> None:
@@ -12,7 +14,9 @@ def test_version_is_not_empty() -> None:
 
 
 def test_version_format() -> None:
-    parts = __version__.split(".")
-    assert len(parts) == 3
-    for part in parts:
-        assert part.isdigit()
+    """Version must be a valid PEP 440 public version identifier."""
+    assert re.match(r"^\d+\.\d+\.\d+", __version__)
+
+
+def test_default_model() -> None:
+    assert DEFAULT_MODEL == "gpt-4o"

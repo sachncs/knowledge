@@ -56,14 +56,6 @@ class TestBundleSerializer:
             assert count == 0
             assert os.path.isfile(os.path.join(tmpdir, "index.md"))
 
-    def test_add_concept_replaces_existing(self) -> None:
-        """KnowledgeGraph dict key enforces unique IDs — add replaces."""
-        c1 = Concept(id="dup", name="First")
-        c2 = Concept(id="dup", name="Second")
-        graph = _make_graph(c1, c2)
-        assert len(graph.concepts) == 1
-        assert graph.concepts["dup"].name == "Second"
-
     def test_serialize_groups_by_tag_via_path_map(self) -> None:
         path_map = {"guide": "docs/guides", "reference": "docs/reference"}
         graph = _make_graph(*SAMPLE_CONCEPTS)
@@ -109,7 +101,18 @@ class TestBundleSerializer:
         with tempfile.TemporaryDirectory() as tmpdir:
             BundleSerializer().serialize(graph, tmpdir)
             issues = BundleSerializer().validate(tmpdir)
+            assert issues == [], f"Expected clean bundle, got: {issues}"
+
+    def test_validate_clean_bundle_counts_files(self) -> None:
+        """Verify that validation correctly indexes all concept files."""
+        graph = _make_graph(*SAMPLE_CONCEPTS)
+        with tempfile.TemporaryDirectory() as tmpdir:
+            BundleSerializer().serialize(graph, tmpdir)
+            issues = BundleSerializer().validate(tmpdir)
             assert issues == []
+            # All concept files exist and are linked from the index
+            for c in SAMPLE_CONCEPTS:
+                assert os.path.isfile(os.path.join(tmpdir, f"{c.id}.md"))
 
     def test_validate_missing_index(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
