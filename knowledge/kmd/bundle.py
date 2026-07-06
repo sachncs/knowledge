@@ -50,6 +50,8 @@ from collections import defaultdict
 
 from knowledge.models import Concept, KnowledgeGraph
 
+Entry = tuple[str, str, str | None]
+
 
 class BundleSerializer:
     """Serializes a :class:`~knowledge.models.KnowledgeGraph` into an OKF v0.1 directory bundle.
@@ -82,6 +84,7 @@ class BundleSerializer:
         2. Creates intermediate directories as needed.
         3. Writes one ``.md`` file per concept (via :meth:`write_concept`).
         4. Writes ``index.md`` for each subdirectory and a root ``index.md``.
+        5. Removes stale ``.md`` files not part of the current graph.
 
         Args:
             graph: The knowledge graph to serialize.
@@ -89,16 +92,13 @@ class BundleSerializer:
 
         Returns:
             Number of concept files written.
-
-        Raises:
-            ValidationError: If duplicate concept IDs exist.
         """
-        path_groups: dict[str, list[tuple[str, str, str]]] = defaultdict(list)
-        flat_concepts: list[tuple[str, str, str]] = []
+        path_groups: dict[str, list[Entry]] = defaultdict(list)
+        flat_concepts: list[Entry] = []
 
         for cid, concept in sorted(graph.concepts.items()):
             subdir = self.find_path(concept.tags)
-            entry = (cid, concept.name, concept.description or "")
+            entry = (cid, concept.name, concept.description or None)
             if subdir:
                 path_groups[subdir].append(entry)
             else:
@@ -110,32 +110,51 @@ class BundleSerializer:
             for i in range(1, len(parts) + 1):
                 all_dirs.add("/".join(parts[:i]))
 
+        written_files: set[str] = set()
         written = 0
+
         for subdir, entries in sorted(path_groups.items()):
             target = os.path.join(output_dir, subdir)
             os.makedirs(target, exist_ok=True)
-            for cid, name, _ in entries:
-                self.write_concept(target, graph.concepts[cid])
+            for cid, _, _ in entries:
+                filepath = self.write_concept(target, graph.concepts[cid])
+                written_files.add(filepath)
                 written += 1
 
         for cid, _, _ in flat_concepts:
-            self.write_concept(output_dir, graph.concepts[cid])
+            filepath = self.write_concept(output_dir, graph.concepts[cid])
+            written_files.add(filepath)
             written += 1
 
+        # write subdirectory indexes (only for dirs that have direct entries)
+        written_indexes: set[str] = set()
         for subdir in sorted(all_dirs):
             target = os.path.join(output_dir, subdir)
             raw_entries = path_groups.get(subdir, [])
             if not raw_entries:
                 continue
             title = self.dir_title(subdir)
-            index_entries = [(cid, name, "") for cid, name, _ in raw_entries]
-            self.write_index(target, title, "index", index_entries)
+            index_entries: list[Entry] = [(cid, name, None) for cid, name, _ in raw_entries]
+            filepath = self.write_index(target, title, "index", index_entries)
+            written_files.add(filepath)
+            written_indexes.add(subdir)
 
-        root_entries = [(cid, name, "") for cid, name, _ in flat_concepts]
-        for subdir in sorted(all_dirs):
+        # root index — only link subdirs that actually got an index written
+        root_entries: list[Entry] = [(cid, name, None) for cid, name, _ in flat_concepts]
+        for subdir in sorted(all_dirs & written_indexes):
             title = self.dir_title(subdir)
             root_entries.append((subdir, title, subdir))
-        self.write_index(output_dir, "Knowledge Bundle", "bundle", root_entries)
+        filepath = self.write_index(output_dir, "Knowledge Bundle", "bundle", root_entries)
+        written_files.add(filepath)
+
+        # remove stale .md files not part of this serialization
+        for dirpath, _, filenames in os.walk(output_dir):
+            for f in filenames:
+                if not f.endswith(".md"):
+                    continue
+                filepath = os.path.join(dirpath, f)
+                if filepath not in written_files:
+                    os.remove(filepath)
 
         return written
 
@@ -206,8 +225,8 @@ class BundleSerializer:
             broken.append(f"Cannot read {os.path.basename(index_path)}: {exc}")
             return files, broken
 
-        for match in re.finditer(r"\(([^)]+)\)", content):
-            link = match.group(1)
+        for match in re.finditer(r"\[([^\]]+)\]\(([^)]+)\)", content):
+            link = match.group(2)
             if link.startswith(("http://", "https://", "ftp://")):
                 continue
             resolved = os.path.normpath(os.path.join(base_dir, link))
@@ -283,7 +302,7 @@ class BundleSerializer:
         )
         return value
 
-    def write_concept(self, directory: str, concept: Concept) -> None:
+    def write_concept(self, directory: str, concept: Concept) -> str:
         """Write a single concept ``.md`` file to *directory*.
 
         The file consists of YAML frontmatter (delimited by ``---``)
@@ -295,6 +314,9 @@ class BundleSerializer:
         Args:
             directory: The directory to write into.
             concept: The concept to serialize.
+
+        Returns:
+            The absolute path to the written file.
         """
         tag_list = (
             ", ".join(f'"{self.yaml_escape(t)}"' for t in concept.tags) if concept.tags else ""
@@ -320,14 +342,15 @@ class BundleSerializer:
         filepath = os.path.join(directory, f"{concept.id}.md")
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
+        return os.path.normpath(filepath)
 
     def write_index(
         self,
         directory: str,
         title: str,
         index_type: str,
-        entries: list[tuple[str, str, str]],
-    ) -> None:
+        entries: list[Entry],
+    ) -> str:
         """Write an ``index.md`` file listing bundle concepts.
 
         Args:
@@ -335,10 +358,13 @@ class BundleSerializer:
             title: Index display title.
             index_type: ``"index"`` for subdirectory indexes,
                 ``"bundle"`` for the root index.
-            entries: List of ``(id, name, link_path_flag)`` tuples.
-                ``link_path_flag`` is empty for concept links (resolved
+            entries: List of ``(id, name, link_path)`` tuples.
+                ``link_path`` is ``None`` for concept links (resolved
                 via ``id.md``) or a subdirectory name (resolved via
                 ``subdir/index.md``).
+
+        Returns:
+            The absolute path to the written index file.
         """
         frontmatter_lines = [
             "---",
@@ -350,9 +376,9 @@ class BundleSerializer:
         ]
 
         body_lines = ["", f"# {title}", ""]
-        for eid, name, link_path_flag in entries:
-            if link_path_flag:
-                body_lines.append(f"- [{name}]({link_path_flag}/index.md)")
+        for eid, name, link_path in entries:
+            if link_path:
+                body_lines.append(f"- [{name}]({link_path}/index.md)")
             else:
                 body_lines.append(f"- [{name}]({eid}.md)")
 
@@ -360,6 +386,7 @@ class BundleSerializer:
         filepath = os.path.join(directory, "index.md")
         with open(filepath, "w", encoding="utf-8") as f:
             f.write(content)
+        return os.path.normpath(filepath)
 
     @staticmethod
     def index_id(directory: str, title: str) -> str:
@@ -377,7 +404,7 @@ class BundleSerializer:
             A kebab-case string usable as an index ``id``.
         """
         base = (
-            os.path.basename(directory.rstrip("/"))
+            os.path.basename(os.path.normpath(directory))
             if directory and directory not in (".", "")
             else title.lower()
         )
