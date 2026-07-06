@@ -102,8 +102,8 @@ class TestCLI:
                     ]
                 )
 
-    def test_model_flag_on_remove(self) -> None:
-        """Remove command creates Knowledge() without model arg."""
+    def test_model_flag_still_allows_remove(self) -> None:
+        """--model flag is accepted by remove but silently ignored."""
         with patch("knowledge.sdk.Knowledge.remove", return_value=1):
             with tempfile.TemporaryDirectory() as tmpdir:
                 main(["--model", "gpt-4o", "remove", "x", tmpdir])
