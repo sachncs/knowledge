@@ -75,6 +75,6 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for details.
 
 ### Where can I report a bug?
 
-Open a [GitHub issue](https://github.com/sachn-cs/knowledge/issues)
+Open a [GitHub issue](https://github.com/sachncs/knowledge/issues)
 for non-security bugs. For security vulnerabilities, see
 [SECURITY.md](../SECURITY.md).

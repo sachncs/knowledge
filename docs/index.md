@@ -12,7 +12,7 @@ results as an **OKF v0.1** directory bundle.
 ## Quick Start
 
 ```bash
-pip install git+https://github.com/sachn-cs/knowledge.git
+pip install git+https://github.com/sachncs/knowledge.git
 ```
 
 ```python
@@ -84,4 +84,4 @@ Commands:
 
 - [ADR-001: KMD flat format (superseded)](adr/0001-kmd-flat-format-v0.1.md)
 - [ADR-002: OKF v0.1 bundle format](adr/0002-bundle-format-v0-1.md)
-- [GitHub](https://github.com/sachn-cs/knowledge)
+- [GitHub](https://github.com/sachncs/knowledge)

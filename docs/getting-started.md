@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-pip install git+https://github.com/sachn-cs/knowledge.git
+pip install git+https://github.com/sachncs/knowledge.git
 ```
 
 Or with dev dependencies:
