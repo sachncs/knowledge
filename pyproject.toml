@@ -52,7 +52,7 @@ Issues = "https://github.com/sachncs/knowledge/issues"
 dev = [
     "pytest>=9.1.1",
     "pytest-cov>=7.1.0",
-    "ruff>=0.15.20",
+    "ruff>=0.15.22",
     "mypy>=2.2.0",
     "vulture>=2.7",
 ]
