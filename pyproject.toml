@@ -62,7 +62,7 @@ bench = [
 docs = [
     "mkdocs>=1.6.1",
     "mkdocstrings[python]>=1.0.6",
-    "mkdocs-material>=9.5.0",
+    "mkdocs-material>=9.7.7",
 ]
 
 [tool.ruff]
