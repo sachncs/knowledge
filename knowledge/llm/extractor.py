@@ -269,7 +269,7 @@ def strip_json_fence(text: str) -> str:
 
     Many LLMs wrap JSON output in Markdown fences even when instructed
     not to.  This function removes leading and trailing fences, handling
-    the optional ``json`` language tag.
+    the optional ``json`` language tag case-insensitively.
 
     Args:
         text: The raw LLM output.
@@ -279,6 +279,6 @@ def strip_json_fence(text: str) -> str:
     """
     text = text.strip()
     if text.startswith("```"):
-        text = re.sub(r"^```(?:json)?\s*", "", text)
+        text = re.sub(r"^```(?:json)?\s*", "", text, flags=re.IGNORECASE)
         text = re.sub(r"\s*```$", "", text)
     return text.strip()
