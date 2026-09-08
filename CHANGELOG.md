@@ -11,6 +11,9 @@ duplicated as features).
 
 ## [Unreleased]
 
+### Fixed
+- Make `strip_json_fence` language tag match case-insensitive so uppercase or mixed-case JSON code fences are correctly stripped (#44).
+
 ## [0.1.0] - 2026-07-05
 
 Initial alpha release. LLM-powered OKF v0.1 bundle creation from
