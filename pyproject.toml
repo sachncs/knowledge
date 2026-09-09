@@ -1,0 +1,89 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "knowledge"
+version = "0.1.0"
+description = "LLM-powered OKF bundle creation from documentation sources"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { file = "LICENSE" }
+keywords = [
+    "knowledge",
+    "okf",
+    "knowledge-graph",
+    "knowledge-engineering",
+    "llm",
+    "litellm",
+    "documentation",
+    "extraction",
+]
+authors = [
+    { name = "Sachin", email = "sachncs@gmail.com" },
+]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+
+dependencies = [
+    "pydantic>=2.13.5",
+    "litellm>=1.99.0,<2.0.0",
+]
+
+[project.scripts]
+knowledge = "knowledge.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/sachncs/knowledge"
+Documentation = "https://sachncs.github.io/knowledge"
+Source = "https://github.com/sachncs/knowledge"
+Issues = "https://github.com/sachncs/knowledge/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.16.6",
+    "mypy>=2.3.1",
+    "vulture>=2.7",
+]
+bench = [
+    "pytest-benchmark>=5.3.0",
+]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocstrings[python]>=1.0.6",
+    "mkdocs-material>=9.7.7",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.vulture]
+ignore_names = ["cls", "validate_id_is_slug", "side_effect"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-v --tb=short"

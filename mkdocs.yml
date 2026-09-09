@@ -1,0 +1,163 @@
+site_name: knowledge — LLM-powered OKF bundle creation
+site_description: >-
+  An open-source Python SDK that turns documentation sources into
+  structured OKF bundles using any litellm-supported LLM.
+site_author: sachncs
+
+repo_url: https://github.com/sachncs/knowledge
+repo_name: sachncs/knowledge
+edit_uri: edit/master/docs/
+
+docs_dir: docs
+site_dir: site
+
+copyright: >-
+  Copyright © 2026 sachncs. Released under the MIT License.
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/favicon.png
+  font:
+    text: Inter
+    code: JetBrains Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+  icon:
+    repo: fontawesome/brands/github
+    edit: material/file-edit-outline
+
+extra_css:
+  - assets/brand.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sachncs/knowledge
+      name: sachncs/knowledge on GitHub
+  generator: false
+  metadata:
+    og:type: website
+    og:locale: en_US
+    og:site_name: knowledge
+    og:image: https://sachncs.github.io/knowledge/assets/og-image.png
+    og:image:width: 1200
+    og:image:height: 630
+    twitter:card: summary_large_image
+    twitter:image: https://sachncs.github.io/knowledge/assets/og-image.png
+    description: >-
+      An open-source Python SDK that turns documentation sources into
+      structured OKF bundles using any litellm-supported LLM.
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+            merge_init_into_class: false
+            docstring_section_style: table
+            heading_level: 2
+            filters: ["!^_"]
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: date
+      fallback_to_build_date: true
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Concepts: concepts.md
+  - CLI reference: cli.md
+  - Python API: api.md
+  - Architecture: architecture.md
+  - Configuration: configuration.md
+  - Tutorials:
+      - tutorials/index.md
+      - Build a bundle from a URL: tutorials/build-from-url.md
+      - Refresh a bundle after the source changes: tutorials/update-bundle.md
+      - Curate a bundle by removing concepts: tutorials/curate-bundle.md
+      - Run the SDK without network access: tutorials/local-files.md
+  - Troubleshooting: troubleshooting.md
+  - Frequently asked questions: faq.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+  - Decisions:
+      - ADR index: decisions/index.md
+      - "ADR-002: OKF v0.1 bundle format": decisions/0002-okf-v0-1-bundle-format.md
+      - "ADR-001: KMD flat format (superseded)": decisions/0001-kmd-flat-format-superseded.md
+
+validation:
+  nav:
+    omitted_files: ignore
+    absolute_links: warn
