@@ -8,7 +8,7 @@
     <a href="https://pypi.org/project/knowledge/"><img src="https://img.shields.io/pypi/v/knowledge" alt="PyPI"></a>
     <a href="https://github.com/sachncs/knowledge/stargazers"><img src="https://img.shields.io/github/stars/sachncs/knowledge" alt="Stars"></a>
     <a href="SECURITY.md"><img src="https://img.shields.io/badge/security-policy-blue" alt="Security"></a>
-    <a href="https://sachncs.github.io/knowledge/"><img src="https://img.shields.io/badge/docs-sachncs.github.io%2Fknowledge-indigo" alt="Docs"></a>
+    <a href="https://sachncs.github.io/knowledge/"><img src="https://img.shields.io/badge/site-sachncs.github.io%2Fknowledge-indigo" alt="Site"></a>
   </p>
 </p>
 
@@ -316,11 +316,9 @@ Report vulnerabilities to **sachncs@gmail.com** — see [SECURITY.md](SECURITY.m
 
 ## Documentation
 
-The full documentation is published at <https://sachncs.github.io/knowledge/>,
-including a [Getting started](https://sachncs.github.io/knowledge/getting-started/)
-guide, a [Python API reference](https://sachncs.github.io/knowledge/api/),
-[tutorials](https://sachncs.github.io/knowledge/tutorials/), and a
-[troubleshooting](https://sachncs.github.io/knowledge/troubleshooting/) page.
+The product landing page is published at <https://sachncs.github.io/knowledge/>.
+Full source-level documentation lives in [`docs/`](docs/) and is built locally
+with MkDocs — see the [Contributing](CONTRIBUTING.md) guide for details.
 
 ## License
 

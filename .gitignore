@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
 build/
 *.egg
 .pytest_cache/
@@ -28,11 +27,16 @@ env/
 # Logs
 *.log
 
-# Docs
-site/
-
 # Project-specific
 SPEC.md
 
 # Generated bundles
 google-python-style-guide/
+
+# MkDocs local build output (site/ is the frontend project)
+dist-docs/
+
+# Frontend site build artifacts & dependencies
+site/dist/
+site/node_modules/
+site/.astro/
