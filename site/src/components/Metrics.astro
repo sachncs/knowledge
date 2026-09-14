@@ -1,0 +1,54 @@
+---
+const metrics = [
+  {
+    label: "Test coverage",
+    value: "100%",
+    note: "65+ tests across SDK, CLI, and serialization layers.",
+  },
+  {
+    label: "Provider support",
+    value: "Any",
+    note: "Routes through litellm — OpenAI, Anthropic, Gemini, Bedrock, Ollama, vLLM, and more.",
+  },
+  {
+    label: "Bundle format",
+    value: "OKF v0.1",
+    note: "Standardized, directory-based, and diffable in Git.",
+  },
+  {
+    label: "Runtime deps",
+    value: "2",
+    note: "Just pydantic and litellm. No transitive bloat.",
+  },
+];
+---
+
+<section class="section-tight">
+  <div class="container-wide">
+    <div class="surface-elev reveal rounded-3xl p-8 sm:p-12">
+      <div class="grid grid-cols-1 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-x-10">
+        {
+          metrics.map((m, i) => (
+            <div class={`relative ${i > 0 ? "lg:pl-10" : ""}`}>
+              {i > 0 && (
+                <span
+                  aria-hidden="true"
+                  class="absolute left-0 top-2 hidden h-12 w-px bg-gradient-to-b from-transparent via-[var(--border-strong)] to-transparent lg:block"
+                />
+              )}
+              <div class="font-mono text-[44px] font-semibold leading-none tracking-tighter text-ink-900 dark:text-ink-50 sm:text-[52px]">
+                {m.value}
+              </div>
+              <div class="mt-3 text-[13px] font-medium uppercase tracking-[0.14em] text-ink-500 dark:text-ink-400">
+                {m.label}
+              </div>
+              <p class="mt-2 max-w-xs text-[13.5px] leading-relaxed text-ink-500 dark:text-ink-300">
+                {m.note}
+              </p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

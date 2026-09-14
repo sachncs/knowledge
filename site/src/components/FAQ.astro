@@ -1,0 +1,64 @@
+---
+const faqs = [
+  {
+    q: "Which LLM providers are supported?",
+    a: "Any provider that litellm supports: OpenAI, Anthropic, Google Gemini, AWS Bedrock, Azure OpenAI, vLLM, Ollama, and more. Swap models with the --model flag or the model= constructor argument.",
+  },
+  {
+    q: "Is my data sent anywhere?",
+    a: "Only the document section text goes to the LLM provider you choose. If you point at a local model via Ollama or vLLM, nothing leaves your machine.",
+  },
+  {
+    q: "What is OKF v0.1?",
+    a: "Open Knowledge Format v0.1 is a directory-based format: an index.md, per-concept Markdown files, YAML frontmatter, and tag-based subdirectories. Designed to be readable by both humans and tools.",
+  },
+  {
+    q: "Can I update an existing bundle?",
+    a: "Yes. knowledge.update() re-extracts from the source and overwrites the bundle in place. It's destructive — manual edits will be lost — so use it like a build step.",
+  },
+  {
+    q: "Does it work offline?",
+    a: "The HTTP fetcher needs network access, but you can also point at a local HTML or Markdown file. Pair that with a local LLM via Ollama for a fully offline workflow.",
+  },
+  {
+    q: "How does it handle large documents?",
+    a: "Each request is capped at 50 MiB by default. Retries use exponential backoff. Sections are extracted independently, so a single failure won't lose the whole bundle.",
+  },
+];
+---
+
+<section id="faq" class="section">
+  <div class="container-pro">
+    <div class="mx-auto max-w-2xl text-center">
+      <span class="eyebrow mx-auto">
+        <span class="eyebrow-dot" aria-hidden="true"></span>
+        FAQ
+      </span>
+      <h2 class="reveal mt-5 text-balance text-display-lg gradient-text-muted">
+        Questions, <span class="gradient-text">answered.</span>
+      </h2>
+    </div>
+
+    <div class="reveal mx-auto mt-12 max-w-3xl">
+      <div class="divide-y divide-[var(--border)] rounded-2xl border border-[var(--border)] bg-[var(--bg-elev)]">
+        {
+          faqs.map((f) => (
+            <details class="group">
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-[15px] font-medium text-ink-900 transition-colors hover:bg-[var(--bg-soft)] dark:text-ink-50 sm:px-6">
+                <span>{f.q}</span>
+                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--border-strong)] text-ink-500 transition-transform duration-300 group-open:rotate-45 dark:text-ink-400">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                    <path d="M12 5v14M5 12h14" />
+                  </svg>
+                </span>
+              </summary>
+              <div class="px-5 pb-5 text-[14.5px] leading-relaxed text-ink-500 sm:px-6 dark:text-ink-300">
+                {f.a}
+              </div>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,33 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Nav from "@/components/Nav.astro";
+import Hero from "@/components/Hero.astro";
+import Features from "@/components/Features.astro";
+import Workflow from "@/components/Workflow.astro";
+import CodePreview from "@/components/CodePreview.astro";
+import Metrics from "@/components/Metrics.astro";
+import UseCases from "@/components/UseCases.astro";
+import FAQ from "@/components/FAQ.astro";
+import CTA from "@/components/CTA.astro";
+import Footer from "@/components/Footer.astro";
+---
+
+<BaseLayout
+  title="knowledge — LLM-powered OKF bundle creation"
+  description="An open-source Python SDK that turns any documentation source into a structured, version-controlled OKF bundle using any litellm-supported LLM."
+>
+  <Nav />
+
+  <main id="main" class="relative">
+    <Hero />
+    <Features />
+    <Workflow />
+    <CodePreview />
+    <Metrics />
+    <UseCases />
+    <FAQ />
+    <CTA />
+  </main>
+
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,190 @@
+---
+import CodeTabs from "./react/CodeTabs.tsx";
+
+const tabs = [
+  {
+    id: "cli",
+    label: "CLI",
+    code: `# Create a bundle from any documentation URL
+$ knowledge create \\
+    https://google.github.io/styleguide/pyguide.html \\
+    ./pyguide
+
+▸ fetching…                     1.2 MB, 200 OK
+▸ splitting by <h2>–<h4>       6 sections
+▸ extracting via gpt-4o…       6 concepts
+✓ wrote 6 concept files
+✓ index.md linked to all concepts
+
+# Re-extract after the source changes
+$ knowledge update \\
+    https://google.github.io/styleguide/pyguide.html \\
+    ./pyguide
+
+# Trim a bundle by removing specific concepts
+$ knowledge remove deprecated-section \\
+    outdated-topic ./pyguide/`,
+  },
+  {
+    id: "python",
+    label: "Python API",
+    code: `from knowledge import Knowledge
+
+# Configure with any litellm-supported model
+k = Knowledge(model="claude-3-opus-20240229")
+
+# Return an in-memory KnowledgeGraph
+graph = k.create(
+    "https://google.github.io/styleguide/pyguide.html"
+)
+print(graph.concepts["naming-conventions"].summary)
+
+# Or write the OKF v0.1 bundle directly to disk
+count = k.create_bundle(
+    "https://google.github.io/styleguide/pyguide.html",
+    "./pyguide/",
+)
+print(f"Wrote {count} concept files")
+
+# Refresh, then curate
+k.update(source, "./pyguide/")
+k.remove(["deprecated-section"], "./pyguide/")`,
+  },
+  {
+    id: "bundle",
+    label: "Output",
+    code: `pyguide/
+├── index.md
+├── naming-conventions.md
+├── imports.md
+├── comments.md
+├── type-annotations.md
+├── error-handling.md
+└── style/
+    └── naming-conventions.md
+
+# naming-conventions.md
+---
+id: naming-conventions
+title: Naming Conventions
+tags: [style]
+---
+
+## Summary
+Modules use snake_case, classes use PascalCase,
+constants use UPPER_CASE.
+
+## Links
+- → imports
+- → comments`,
+  },
+];
+---
+
+<section id="code" class="section">
+  <div class="container-wide">
+    <div class="mx-auto max-w-2xl text-center">
+      <span class="eyebrow mx-auto">
+        <span class="eyebrow-dot" aria-hidden="true"></span>
+        The interface
+      </span>
+      <h2 class="reveal mt-5 text-balance text-display-lg gradient-text-muted">
+        Three ways in.
+        <span class="gradient-text">One sharp tool.</span>
+      </h2>
+      <p class="reveal mx-auto mt-5 max-w-xl text-pretty text-lg text-ink-500 dark:text-ink-300">
+        Use the CLI for ad-hoc work, the Python API for production pipelines,
+        or read the output bundle directly — it's plain Markdown.
+      </p>
+    </div>
+
+    <div class="reveal mt-12">
+      <CodeTabs client:visible tabs={tabs} />
+    </div>
+
+    <!-- Install command anchor -->
+    <div id="install" class="reveal mt-12">
+      <div
+        class="relative overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--bg-elev)] p-6 sm:p-8"
+      >
+        <div
+          aria-hidden="true"
+          class="absolute inset-0 -z-10 bg-gradient-to-br from-accent-500/8 via-transparent to-mint-500/8"
+        ></div>
+        <div class="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
+          <div>
+            <h3 class="text-lg font-semibold tracking-tight text-ink-900 dark:text-ink-50">
+              Ready in 30 seconds.
+            </h3>
+            <p class="mt-1 text-sm text-ink-500 dark:text-ink-300">
+              Requires Python 3.12+. Works on macOS, Linux, and Windows.
+            </p>
+          </div>
+          <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <a
+              href="https://github.com/sachncs/knowledge#installation"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-ghost w-full justify-center sm:w-auto"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.03c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.27-1.69-1.27-1.69-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.69 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.06 11.06 0 0 1 5.79 0c2.21-1.5 3.18-1.18 3.18-1.18.62 1.59.23 2.76.11 3.05.74.81 1.18 1.84 1.18 3.09 0 4.42-2.69 5.4-5.25 5.68.41.36.78 1.05.78 2.13v3.16c0 .31.21.66.8.55C20.21 21.39 23.5 17.07 23.5 12 23.5 5.65 18.35.5 12 .5Z" />
+              </svg>
+              Read the install guide
+            </a>
+            <button
+              type="button"
+              data-copy="pip install knowledge"
+              class="copy-btn btn-primary group w-full justify-center sm:w-auto"
+            >
+              <span class="copy-default inline-flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="14" height="14" x="8" y="8" rx="2" />
+                  <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                </svg>
+                <span>pip install knowledge</span>
+              </span>
+              <span class="copy-done hidden items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>Copied!</span>
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>(".copy-btn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const text = btn.dataset.copy || "";
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch {
+        // fallback
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      const def = btn.querySelector<HTMLElement>(".copy-default");
+      const done = btn.querySelector<HTMLElement>(".copy-done");
+      if (def && done) {
+        def.classList.add("hidden");
+        done.classList.remove("hidden");
+        done.classList.add("inline-flex");
+        setTimeout(() => {
+          def.classList.remove("hidden");
+          done.classList.add("hidden");
+          done.classList.remove("inline-flex");
+        }, 1500);
+      }
+    });
+  });
+</script>
