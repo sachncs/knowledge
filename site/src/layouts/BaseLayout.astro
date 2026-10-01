@@ -18,6 +18,7 @@ const siteName = "knowledge";
 const fullTitle = title.includes(siteName) ? title : `${title} · ${siteName}`;
 const baseURL = Astro.site ?? new URL("https://sachncs.github.io");
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+const faviconURL = `${basePath}/favicon.svg?v=2`;
 const routePath = Astro.url.pathname === basePath || Astro.url.pathname.startsWith(`${basePath}/`)
   ? Astro.url.pathname
   : `${basePath}${Astro.url.pathname}`;
@@ -56,9 +57,9 @@ const ogURL = new URL(`${basePath}${ogImage}`, baseURL).toString();
     <meta name="twitter:image" content={ogURL} />
 
     <!-- Icons -->
-    <link rel="icon" type="image/svg+xml" href={`${basePath}/favicon.svg`} />
+    <link rel="icon" type="image/svg+xml" href={faviconURL} />
     <link rel="apple-touch-icon" href={`${basePath}/apple-touch-icon.svg`} />
-    <link rel="mask-icon" href={`${basePath}/favicon.svg`} color="#2D4966" />
+    <link rel="mask-icon" href={faviconURL} color="#2D4966" />
 
     <!-- RSS / Sitemap -->
     <link rel="sitemap" href={`${basePath}/sitemap-index.xml`} />
