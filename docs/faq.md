@@ -94,4 +94,4 @@ See [Contributing](contributing.md) for the full contribution guide.
 
 ### Where do I report a bug?
 
-Open a [GitHub issue](https://github.com/sachncs/knowledge/issues). For security vulnerabilities, see [SECURITY.md](https://github.com/sachncs/knowledge/blob/master/SECURITY.md) — do not open a public issue.
+Open a [GitHub issue](https://github.com/sachncs/knowledge/issues). For security vulnerabilities, see [the security policy](security.md) — do not open a public issue.

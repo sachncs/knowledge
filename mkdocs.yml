@@ -3,13 +3,15 @@ site_description: >-
   An open-source Python SDK that turns documentation sources into
   structured OKF bundles using any litellm-supported LLM.
 site_author: sachncs
+site_url: https://sachncs.github.io/knowledge/docs/
+use_directory_urls: true
 
 repo_url: https://github.com/sachncs/knowledge
 repo_name: sachncs/knowledge
 edit_uri: edit/master/docs/
 
 docs_dir: docs
-site_dir: dist-docs
+site_dir: site/dist/docs
 
 copyright: >-
   Copyright © 2026 sachncs. Released under the MIT License.
@@ -68,11 +70,11 @@ extra:
     og:type: website
     og:locale: en_US
     og:site_name: knowledge
-    og:image: https://sachncs.github.io/knowledge/assets/og-image.png
+    og:image: https://sachncs.github.io/knowledge/og-image.png
     og:image:width: 1200
     og:image:height: 630
     twitter:card: summary_large_image
-    twitter:image: https://sachncs.github.io/knowledge/assets/og-image.png
+    twitter:image: https://sachncs.github.io/knowledge/og-image.png
     description: >-
       An open-source Python SDK that turns documentation sources into
       structured OKF bundles using any litellm-supported LLM.
@@ -131,6 +133,7 @@ plugins:
             filters: ["!^_"]
   - git-revision-date-localized:
       enable_creation_date: true
+      enable_git_follow: false
       type: date
       fallback_to_build_date: true
 
@@ -151,7 +154,12 @@ nav:
   - Troubleshooting: troubleshooting.md
   - Frequently asked questions: faq.md
   - Contributing: contributing.md
+  - Full contribution guide: contributing-full.md
+  - Code of conduct: code-of-conduct.md
+  - Security: security.md
+  - Benchmark: benchmark.md
   - Changelog: changelog.md
+  - Roadmap: roadmap.md
   - Decisions:
       - ADR index: decisions/index.md
       - "ADR-002: OKF v0.1 bundle format": decisions/0002-okf-v0-1-bundle-format.md

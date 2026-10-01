@@ -2,11 +2,11 @@
 
 Thank you for your interest in **knowledge** — bug reports, feature ideas, documentation improvements, and pull requests are all welcome.
 
-This page summarises the contribution workflow. The full guide lives in [`CONTRIBUTING.md`](https://github.com/sachncs/knowledge/blob/master/CONTRIBUTING.md) at the repository root.
+This page summarises the contribution workflow. Read the [full contribution guide](contributing-full.md) for development and release details.
 
 ## Code of conduct
 
-This project follows the [Contributor Covenant v2.1](https://github.com/sachncs/knowledge/blob/master/CODE_OF_CONDUCT.md). By participating you agree to uphold its terms. Report unacceptable behaviour to **sachncs@gmail.com**.
+This project follows the [Contributor Covenant v2.1](code-of-conduct.md). By participating you agree to uphold its terms. Report unacceptable behaviour to **sachncs@gmail.com**.
 
 ## Development setup
 
@@ -89,7 +89,7 @@ When you add a new public class or function, include a docstring with `Args:`, `
 
 ## Reporting security issues
 
-**Do not** open a public GitHub issue for security vulnerabilities. Email **sachncs@gmail.com** or follow the process in [SECURITY.md](https://github.com/sachncs/knowledge/blob/master/SECURITY.md).
+**Do not** open a public GitHub issue for security vulnerabilities. Email **sachncs@gmail.com** or follow the process in [the security policy](security.md).
 
 ## Release process
 

@@ -96,4 +96,4 @@ For local Ollama, ensure the daemon is running and `OLLAMA_HOST` points at it.
 
 - Read the [FAQ](faq.md) for high-level questions.
 - Open an issue at <https://github.com/sachncs/knowledge/issues> — include the command you ran, the full output, and the version (`python -c "import knowledge; print(knowledge.__version__)"`).
-- For security issues, follow [SECURITY.md](https://github.com/sachncs/knowledge/blob/master/SECURITY.md) — **do not** open a public issue.
+- For security issues, follow [the security policy](security.md) — **do not** open a public issue.

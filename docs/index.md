@@ -499,8 +499,8 @@ See also: [Imports](imports.md), [Style Rules](style-rules/index.md).
         <h5>Resources</h5>
         <ul>
           <li><a href="changelog/">Changelog</a></li>
-          <li><a href="https://github.com/sachncs/knowledge/blob/master/ROADMAP.md">Roadmap</a></li>
-          <li><a href="https://github.com/sachncs/knowledge/blob/master/BENCHMARK.md">Benchmark</a></li>
+          <li><a href="roadmap/">Roadmap</a></li>
+          <li><a href="benchmark/">Benchmark</a></li>
           <li><a href="decisions/">Decisions (ADRs)</a></li>
         </ul>
       </div>
@@ -510,8 +510,8 @@ See also: [Imports](imports.md), [Style Rules](style-rules/index.md).
         <ul>
           <li><a href="https://github.com/sachncs/knowledge">GitHub repository</a></li>
           <li><a href="https://github.com/sachncs/knowledge/issues">Issues</a></li>
-          <li><a href="https://github.com/sachncs/knowledge/blob/master/CONTRIBUTING.md">Contributing</a></li>
-          <li><a href="https://github.com/sachncs/knowledge/blob/master/SECURITY.md">Security</a></li>
+          <li><a href="contributing/">Contributing</a></li>
+          <li><a href="security/">Security</a></li>
         </ul>
       </div>
 

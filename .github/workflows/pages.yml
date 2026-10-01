@@ -28,6 +28,15 @@ jobs:
           cache: npm
           cache-dependency-path: site/package-lock.json
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install documentation dependencies
+        run: python -m pip install -e ".[docs]"
+
       - name: Install dependencies
         working-directory: site
         run: npm ci --no-audit --no-fund
@@ -35,6 +44,16 @@ jobs:
       - name: Build site
         working-directory: site
         run: npm run build
+
+      - name: Build documentation pages
+        run: |
+          cp CHANGELOG.md docs/changelog.md
+          cp ROADMAP.md docs/roadmap.md
+          cp CONTRIBUTING.md docs/contributing-full.md
+          cp CODE_OF_CONDUCT.md docs/code-of-conduct.md
+          cp SECURITY.md docs/security.md
+          cp BENCHMARK.md docs/benchmark.md
+          python -m mkdocs build --strict
 
       - name: Copy .nojekyll to dist
         working-directory: site

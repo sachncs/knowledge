@@ -1,30 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#11151E" />
-      <stop offset="100%" stop-color="#0A0D14" />
-    </linearGradient>
-    <linearGradient id="a" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#9AA8FF" />
-      <stop offset="100%" stop-color="#3D4FE0" />
-    </linearGradient>
-    <linearGradient id="b" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#B5C0FF" />
-      <stop offset="100%" stop-color="#5B6BF2" />
-    </linearGradient>
-    <linearGradient id="c" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#D5DEFF" />
-      <stop offset="100%" stop-color="#7C8BFF" />
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)" />
-  <g stroke="#5B6BF2" stroke-width="2" stroke-linecap="round" opacity="0.7">
-    <line x1="32" y1="22" x2="18" y2="42" />
-    <line x1="32" y1="22" x2="46" y2="42" />
-    <line x1="32" y1="22" x2="32" y2="46" />
-  </g>
-  <circle cx="18" cy="42" r="5" fill="url(#c)" />
-  <circle cx="32" cy="22" r="7" fill="url(#a)" />
-  <circle cx="32" cy="46" r="4" fill="url(#b)" />
-  <circle cx="46" cy="42" r="5" fill="url(#c)" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="knowledge">
+  <rect width="64" height="64" rx="12" fill="#2d4966"/>
+  <path d="M18 14h7v16l15-16h9L34 31l16 19h-9L29 36l-4 4v10h-7z" fill="#fbfaf7"/>
 </svg>
