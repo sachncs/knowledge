@@ -1,3 +1,7 @@
+---
+layout: ../../layouts/DocsLayout.astro
+---
+
 # Contributing
 
 Thank you for your interest in **knowledge**! We welcome contributions

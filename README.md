@@ -193,7 +193,7 @@ knowledge/
 │   ├── test_bundle.py      # 14 tests
 │   ├── test_cli.py         # 14 tests
 │   └── test_import.py      # 3 tests
-├── docs/                   # Documentation
+├── site/src/pages/docs/    # Product and documentation pages
 ├── pyproject.toml          # Build & tool config
 └── .github/                # CI, templates
 ```
@@ -282,7 +282,7 @@ published to PyPI via the CI workflow (`release.yml`).
 | Lint/Format    | [ruff](https://docs.astral.sh/ruff/)        |
 | Type Check     | [mypy](https://mypy-lang.org/) (strict)     |
 | Testing        | [pytest](https://docs.pytest.org/) + pytest-cov |
-| Docs           | [MkDocs](https://www.mkdocs.org/) + Material |
+| Docs           | Astro Markdown pages |
 
 ---
 
@@ -317,8 +317,9 @@ Report vulnerabilities to **sachncs@gmail.com** — see [SECURITY.md](SECURITY.m
 ## Documentation
 
 The product landing page is published at <https://sachncs.github.io/knowledge/>.
-Full source-level documentation lives in [`docs/`](docs/) and is built locally
-with MkDocs — see the [Contributing](CONTRIBUTING.md) guide for details.
+Documentation pages live in [`site/src/pages/docs/`](site/src/pages/docs/) and
+are part of the Astro site. Run `cd site && npm ci && npm run dev` to preview
+them locally. See the [Contributing](CONTRIBUTING.md) guide for details.
 
 ## License
 

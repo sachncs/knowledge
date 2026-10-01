@@ -1,0 +1,122 @@
+---
+import DocsLayout from "@/layouts/DocsLayout.astro";
+
+const headings = [
+  { depth: 2, text: "Start here", slug: "start-here" },
+  { depth: 2, text: "Reference", slug: "reference" },
+  { depth: 2, text: "Project", slug: "project" },
+  { depth: 2, text: "Quick start", slug: "quick-start" },
+];
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const docs = `${base}/docs`;
+---
+
+<DocsLayout frontmatter={{ title: "Documentation", description: "Guides, tutorials, and reference for knowledge, the SDK and CLI for linked Markdown bundles." }} headings={headings}>
+  <section class="docs-hero">
+    <div class="hero-copy">
+      <p class="eyebrow">KNOWLEDGE / DOCUMENTATION</p>
+      <h1>Make your docs work like a knowledge base.</h1>
+      <p class="hero-lede">Start with a source. Extract useful concepts into a linked Markdown bundle you can review, maintain, and version.</p>
+      <div class="hero-actions"><a class="button button-primary" href={`${docs}/getting-started/`}>Get started <span aria-hidden="true">→</span></a><a class="button button-secondary" href={`${docs}/cli/`}>Browse the CLI</a></div>
+    </div>
+    <aside class="bundle-card" aria-label="Example knowledge bundle">
+      <div class="bundle-meta"><span>FROM DOCUMENTATION</span><span>TO OKF BUNDLE</span></div>
+      <div class="source-line"><span class="source-dot" aria-hidden="true"></span><code>developer.guide / setup</code></div>
+      <div class="bundle-rule"></div>
+      <p class="tree-label">A folder of linked Markdown</p>
+      <ul class="file-tree">
+        <li><span class="branch">├─</span><strong>index.md</strong><span class="tree-note">entry point</span></li>
+        <li><span class="branch">├─</span><code>installation.md</code></li>
+        <li><span class="branch">├─</span><code>configuration.md</code></li>
+        <li><span class="branch">└─</span><code>first-project.md</code></li>
+      </ul>
+      <div class="bundle-foot"><span>plain text</span><span>·</span><span>relative links</span><span>·</span><span>versionable</span></div>
+    </aside>
+  </section>
+
+  <div class="release-row"><a href={`${base}/`}>← Product home</a><span>Alpha release · v0.1.0</span></div>
+
+  <section class="link-section" id="start-here">
+    <div class="section-heading"><p class="eyebrow">01 / START HERE</p><h2>Make your first bundle.</h2><p>Install the SDK, choose a model provider, and run your first extraction.</p></div>
+    <div class="guide-grid guide-grid-three">
+      <a class="guide-card" href={`${docs}/getting-started/`}><span class="card-index">01</span><strong>Getting started <span aria-hidden="true">↗</span></strong><small>Install, configure, and create a bundle.</small></a>
+      <a class="guide-card" href={`${docs}/concepts/`}><span class="card-index">02</span><strong>Core concepts <span aria-hidden="true">↗</span></strong><small>See how source sections become linked concepts.</small></a>
+      <a class="guide-card" href={`${docs}/tutorials/`}><span class="card-index">03</span><strong>Tutorials <span aria-hidden="true">↗</span></strong><small>Follow workflows from source to update.</small></a>
+    </div>
+  </section>
+
+  <section class="link-section" id="reference">
+    <div class="section-heading"><p class="eyebrow">02 / REFERENCE</p><h2>Look up a detail.</h2></div>
+    <div class="guide-grid guide-grid-two">
+      <a class="guide-card compact" href={`${docs}/cli/`}><strong>CLI reference <span aria-hidden="true">↗</span></strong><small>Commands, flags, and examples.</small></a>
+      <a class="guide-card compact" href={`${docs}/api/`}><strong>Python API <span aria-hidden="true">↗</span></strong><small>Classes and functions in the SDK.</small></a>
+      <a class="guide-card compact" href={`${docs}/configuration/`}><strong>Configuration <span aria-hidden="true">↗</span></strong><small>Providers, credentials, and settings.</small></a>
+      <a class="guide-card compact" href={`${docs}/architecture/`}><strong>Architecture <span aria-hidden="true">↗</span></strong><small>How reading, extraction, and writing fit.</small></a>
+    </div>
+  </section>
+
+  <section class="link-section project-section" id="project">
+    <div class="section-heading"><p class="eyebrow">03 / PROJECT</p><h2>Work with the project.</h2><p>Release notes, contribution guides, and project policies.</p></div>
+    <div class="project-links"><a href={`${docs}/changelog/`}>Changelog <span>↗</span></a><a href={`${docs}/roadmap/`}>Roadmap <span>↗</span></a><a href={`${docs}/contributing/`}>Contributing <span>↗</span></a><a href={`${docs}/security/`}>Security policy <span>↗</span></a></div>
+  </section>
+
+  <section class="quickstart" id="quick-start">
+    <div><p class="eyebrow">QUICK START</p><h2>Ready to try it?</h2><p>Install the package, set a provider key, and point it at a documentation page.</p></div>
+    <pre><code>pip install knowledge
+export OPENAI_API_KEY="your-api-key"
+knowledge create https://example.com/docs.html ./docs-bundle</code></pre>
+  </section>
+</DocsLayout>
+
+<style>
+  .docs-hero { display:grid; grid-template-columns:minmax(0,1.2fr) minmax(245px,.8fr); align-items:center; gap:clamp(24px,4vw,48px); padding:18px 0 32px; }
+  .eyebrow { margin:0 0 9px; color:var(--faint); font:600 10px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.1em; }
+  .hero-copy h1 { max-width:590px; margin:0 0 16px; color:var(--ink); font-size:clamp(34px,4.6vw,55px); line-height:1.02; letter-spacing:-.055em; font-weight:620; }
+  .hero-lede { max-width:530px; margin:0 0 21px; color:var(--muted); font-size:15px; line-height:1.7; }
+  .hero-actions { display:flex; flex-wrap:wrap; gap:9px; }
+  .button { display:inline-flex; min-height:40px; align-items:center; gap:10px; padding:0 14px; border:1px solid var(--line); border-radius:5px; color:var(--ink); font-size:12px; font-weight:620; text-decoration:none; }
+  .button-primary { border-color:var(--accent-strong); background:var(--accent-strong); color:#fbfaf7; }
+  :global(html.dark) .button-primary { color:#151a1d; }
+  .button-secondary { background:var(--paper-raised); }
+  .bundle-card { padding:15px 17px 12px; border:1px solid var(--line); border-radius:6px; background:var(--paper-raised); box-shadow:0 12px 28px color-mix(in srgb,var(--ink) 5%,transparent); }
+  .bundle-meta,.bundle-foot { display:flex; flex-wrap:wrap; align-items:center; gap:6px; color:var(--faint); font:700 8px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.08em; }
+  .bundle-meta { justify-content:space-between; }
+  .bundle-meta span:last-child { color:var(--accent); }
+  .source-line { display:flex; align-items:center; gap:8px; margin:19px 0 13px; color:var(--muted); }
+  .source-line code,.file-tree code { padding:0; border:0; background:none; color:inherit; font:11px ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .source-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); }
+  .bundle-rule { height:1px; background:var(--line); }
+  .tree-label { margin:12px 0 5px; color:var(--muted); font-size:10px; }
+  .file-tree { display:grid; gap:5px; margin:0; padding:0; list-style:none; }
+  .file-tree li { display:flex; align-items:center; gap:8px; color:var(--ink); font:11px ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .file-tree strong { color:var(--accent-strong); }
+  .branch,.tree-note { color:var(--faint); }
+  .tree-note { margin-left:auto; font:10px ui-sans-serif,system-ui,sans-serif; }
+  .bundle-foot { justify-content:flex-end; margin-top:13px; padding-top:9px; border-top:1px solid var(--line); font-weight:500; letter-spacing:0; }
+  .release-row { display:flex; flex-wrap:wrap; gap:8px 16px; align-items:center; margin-bottom:38px; padding-top:12px; border-top:1px solid var(--line); color:var(--faint); font-size:11px; }
+  .release-row a { color:var(--accent); font-weight:620; text-decoration:none; }
+  .link-section { margin:0 0 38px; }
+  .section-heading { margin-bottom:13px; }
+  .section-heading h2,.quickstart h2 { margin:0 0 5px; color:var(--ink); font-size:clamp(20px,2.4vw,28px); line-height:1.15; letter-spacing:-.04em; font-weight:610; }
+  .section-heading > p:last-child,.quickstart > div > p:last-child { margin:0; color:var(--muted); font-size:12px; line-height:1.6; }
+  .guide-grid { display:grid; gap:9px; }
+  .guide-grid-three { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .guide-grid-two { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .guide-card { display:block; padding:13px 15px; border:1px solid var(--line); border-radius:5px; background:var(--paper-raised); color:var(--ink); text-decoration:none; transition:border-color 140ms ease,transform 140ms ease; }
+  .guide-card:hover,.guide-card:focus-visible { transform:translateY(-2px); border-color:var(--accent); }
+  .guide-card strong { display:flex; justify-content:space-between; gap:8px; margin:5px 0 4px; color:var(--ink); font-size:12px; }
+  .guide-card strong span { color:var(--accent); }
+  .guide-card small { display:block; color:var(--muted); font-size:10px; line-height:1.55; }
+  .card-index { color:var(--faint); font:9px ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .compact strong { margin-top:0; }
+  .project-section { padding:18px; border:1px solid var(--line); border-radius:6px; background:var(--paper-raised); }
+  .project-links { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px 14px; }
+  .project-links a { display:flex; justify-content:space-between; gap:6px; padding:8px 0 0; border-top:1px solid var(--line); color:var(--muted); font-size:11px; text-decoration:none; }
+  .project-links a:hover { color:var(--accent-strong); }
+  .quickstart { display:grid; grid-template-columns:.8fr 1.2fr; align-items:center; gap:22px; margin-bottom:10px; padding:18px; border-radius:6px; background:var(--accent-strong); }
+  .quickstart .eyebrow,.quickstart h2 { color:var(--paper-raised); }
+  .quickstart > div > p:last-child { color:color-mix(in srgb,var(--paper-raised) 76%,transparent); }
+  .quickstart pre { min-width:0; margin:0; padding:13px; overflow:auto; border:1px solid color-mix(in srgb,var(--paper-raised) 20%,transparent); border-radius:5px; background:var(--paper-raised); color:var(--ink); font:10px/1.8 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  @media (max-width:900px) { .docs-hero { grid-template-columns:1fr; } .hero-copy { max-width:620px; } .bundle-card { max-width:560px; } .quickstart { grid-template-columns:1fr; } }
+  @media (max-width:700px) { .guide-grid-three,.guide-grid-two { grid-template-columns:1fr; } .project-links { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+</style>

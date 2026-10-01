@@ -1,0 +1,148 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ThemeToggle from "@/components/ThemeToggle.astro";
+
+const { frontmatter = {}, headings = [] } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const title = frontmatter.title ?? headings.find((heading) => heading.depth === 1)?.text ?? "Documentation";
+const description = frontmatter.description ?? `Documentation for knowledge: ${title}.`;
+const current = Astro.url.pathname.replace(/\/$/, "");
+const path = (value: string) => `${base}/docs/${value}`;
+const navGroups = [
+  { title: "Start here", links: [
+    ["Getting started", "getting-started/"], ["Concepts", "concepts/"], ["Configuration", "configuration/"], ["Tutorials", "tutorials/"]
+  ] },
+  { title: "Reference", links: [
+    ["CLI", "cli/"], ["Python API", "api/"], ["Architecture", "architecture/"], ["Decisions", "decisions/"]
+  ] },
+  { title: "Help and community", links: [
+    ["FAQ", "faq/"], ["Troubleshooting", "troubleshooting/"], ["Contributing", "contributing/"], ["Full guide", "contributing-full/"], ["Code of conduct", "code-of-conduct/"], ["Security", "security/"]
+  ] },
+  { title: "Project", links: [
+    ["Changelog", "changelog/"], ["Roadmap", "roadmap/"], ["Benchmark", "benchmark/"]
+  ] },
+];
+const toc = headings.filter((heading) => heading.depth === 2 || heading.depth === 3);
+---
+
+<BaseLayout title={`${title} · knowledge`} description={description}>
+  <div class="site-shell docs-shell">
+    <header class="site-header">
+      <div class="site-nav">
+        <a class="wordmark" href={base || "/"} aria-label="knowledge home">
+          <span class="wordmark-mark" aria-hidden="true">K</span><span>knowledge</span>
+        </a>
+        <nav aria-label="Main navigation">
+          <a href={`${base}/`}>Home</a>
+          <a class="active" href={path("")}>Documentation</a>
+          <a href="https://github.com/sachncs/knowledge" target="_blank" rel="noopener noreferrer">Source <span aria-hidden="true">↗</span></a>
+        </nav>
+        <div class="nav-actions"><ThemeToggle /></div>
+      </div>
+    </header>
+
+    <main id="main" class="docs-grid">
+      <aside class="docs-sidebar" aria-label="Documentation sections">
+        <a class:list={["docs-home-link", current === path("").replace(/\/$/, "") && "current"]} href={path("")}>Documentation home</a>
+        {navGroups.map((group) => (
+          <section class="docs-nav-group">
+            <h2>{group.title}</h2>
+            <ul>
+              {group.links.map(([label, href]) => (
+                <li><a class:list={[current === path(href).replace(/\/$/, "") && "current"]} href={path(href)}>{label}</a></li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </aside>
+
+      <details class="docs-mobile-nav">
+        <summary>Browse documentation</summary>
+        <nav aria-label="Documentation sections">
+          <a href={path("")}>Documentation home</a>
+          {navGroups.map((group) => <div><strong>{group.title}</strong>{group.links.map(([label, href]) => <a href={path(href)}>{label}</a>)}</div>)}
+        </nav>
+      </details>
+
+      <article class="docs-article">
+        <div class="docs-breadcrumb"><a href={path("")}>Documentation</a><span aria-hidden="true">/</span><span>{title}</span></div>
+        <div class="docs-prose"><slot /></div>
+        <nav class="docs-page-footer" aria-label="Documentation links">
+          <a href={path("")}>← All documentation</a>
+          <a href="https://github.com/sachncs/knowledge" target="_blank" rel="noopener noreferrer">Edit on GitHub ↗</a>
+        </nav>
+      </article>
+
+      {toc.length > 0 && (
+        <aside class="docs-toc" aria-label="On this page">
+          <h2>On this page</h2>
+          <ul>{toc.map((heading) => <li class:list={[heading.depth === 3 && "nested"]}><a href={`#${heading.slug}`}>{heading.text}</a></li>)}</ul>
+        </aside>
+      )}
+    </main>
+
+    <footer class="site-footer">
+      <span>knowledge · v0.1.0 · MIT</span>
+      <div><a href="https://github.com/sachncs/knowledge" target="_blank" rel="noopener noreferrer">GitHub</a><a href={`${base}/`}>Product home</a></div>
+    </footer>
+  </div>
+</BaseLayout>
+
+<style>
+  .docs-shell { --paper:#f5f4f0; --paper-raised:#fbfaf7; --ink:#1d2529; --muted:#596467; --faint:#778184; --line:#d8d9d3; --accent:#3d5c7b; --accent-strong:#2d4966; min-height:100vh; background:var(--paper); color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+  :global(html.dark) .docs-shell { --paper:#151a1d; --paper-raised:#1c2326; --ink:#edf0ec; --muted:#b1bbb9; --faint:#899592; --line:#343e41; --accent:#a7bed4; --accent-strong:#c4d6e5; }
+  .site-header { border-bottom:1px solid var(--line); }
+  .site-nav,.docs-grid,.site-footer { width:min(100% - 48px,1240px); margin-inline:auto; }
+  .site-nav { min-height:72px; display:flex; align-items:center; gap:36px; }
+  .wordmark { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font-weight:650; letter-spacing:-.03em; text-decoration:none; }
+  .wordmark-mark { display:grid; width:30px; height:30px; place-items:center; background:var(--accent-strong); color:var(--paper-raised); border-radius:6px; font-size:17px; font-weight:750; }
+  .site-nav nav { display:flex; align-items:center; gap:24px; margin-left:auto; }
+  .site-nav nav a,.site-footer a { color:var(--muted); font-size:13px; text-decoration:none; }
+  .site-nav nav a:hover,.site-nav nav a.active,.site-footer a:hover { color:var(--ink); }
+  .nav-actions { display:flex; align-items:center; gap:14px; }
+  .docs-grid { display:grid; grid-template-columns:190px minmax(0,1fr) 170px; align-items:start; gap:clamp(28px,4vw,56px); padding-block:42px 82px; }
+  .docs-sidebar,.docs-toc { position:sticky; top:24px; max-height:calc(100vh - 48px); overflow:auto; scrollbar-width:thin; }
+  .docs-home-link { display:block; margin-bottom:25px; color:var(--ink); font-size:13px; font-weight:650; text-decoration:none; }
+  .docs-nav-group { margin:0 0 22px; }
+  .docs-nav-group h2,.docs-toc h2 { margin:0 0 8px; color:var(--faint); font:600 10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing:.09em; text-transform:uppercase; }
+  .docs-nav-group ul,.docs-toc ul { margin:0; padding:0; list-style:none; }
+  .docs-nav-group li { margin:2px 0; }
+  .docs-nav-group a,.docs-toc a { display:block; padding:4px 7px; border-radius:4px; color:var(--muted); font-size:12px; line-height:1.45; text-decoration:none; }
+  .docs-nav-group a:hover,.docs-toc a:hover { color:var(--ink); background:var(--paper-raised); }
+  .docs-nav-group a.current { color:var(--accent-strong); background:var(--paper-raised); font-weight:650; }
+  .docs-article { min-width:0; }
+  .docs-breadcrumb { display:flex; align-items:center; gap:9px; margin:0 0 25px; color:var(--faint); font-size:12px; }
+  .docs-breadcrumb a { color:var(--accent-strong); text-decoration:none; }
+  .docs-prose { min-height:58vh; color:var(--ink); font-size:15px; line-height:1.75; }
+  .docs-prose :global(h1),.docs-prose :global(h2),.docs-prose :global(h3),.docs-prose :global(h4) { color:var(--ink); font-weight:620; letter-spacing:-.035em; line-height:1.2; scroll-margin-top:24px; }
+  .docs-prose :global(h1) { margin:0 0 22px; font-size:clamp(34px,4.3vw,52px); letter-spacing:-.05em; }
+  .docs-prose :global(h2) { margin:2.4em 0 .6em; padding-top:.6em; border-top:1px solid var(--line); font-size:clamp(22px,2.4vw,29px); }
+  .docs-prose :global(h3) { margin:1.8em 0 .5em; font-size:19px; }
+  .docs-prose :global(h4) { margin:1.5em 0 .45em; font-size:15px; }
+  .docs-prose :global(p),.docs-prose :global(li) { color:var(--muted); }
+  .docs-prose :global(strong) { color:var(--ink); font-weight:650; }
+  .docs-prose :global(a) { color:var(--accent-strong); text-decoration-thickness:1px; text-underline-offset:3px; }
+  .docs-prose :global(a:hover) { color:var(--accent); }
+  .docs-prose :global(ul),.docs-prose :global(ol) { padding-left:1.4em; }
+  .docs-prose :global(li+li) { margin-top:.28em; }
+  .docs-prose :global(code) { padding:.12em .35em; border:1px solid var(--line); border-radius:4px; background:var(--paper-raised); color:var(--ink); font: .84em ui-monospace,SFMono-Regular,Menlo,monospace; overflow-wrap:anywhere; }
+  .docs-prose :global(pre) { overflow:auto; margin:1.2em 0; padding:16px 18px; border:1px solid var(--line); border-radius:6px; background:var(--paper-raised); color:var(--ink); font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .docs-prose :global(pre code) { padding:0; border:0; background:none; font:inherit; overflow-wrap:normal; }
+  .docs-prose :global(blockquote) { margin:1.2em 0; padding:.3em 1.1em; border-left:2px solid var(--accent); background:var(--paper-raised); }
+  .docs-prose :global(blockquote p) { margin:.45em 0; }
+  .docs-prose :global(table) { display:block; width:100%; overflow:auto; border-collapse:collapse; font-size:.88em; }
+  .docs-prose :global(th),.docs-prose :global(td) { padding:9px 11px; border:1px solid var(--line); text-align:left; vertical-align:top; }
+  .docs-prose :global(th) { background:var(--paper-raised); color:var(--ink); }
+  .docs-prose :global(hr) { margin:2em 0; border:0; border-top:1px solid var(--line); }
+  .docs-page-footer { display:flex; justify-content:space-between; gap:12px; margin-top:48px; padding-top:16px; border-top:1px solid var(--line); }
+  .docs-page-footer a { color:var(--muted); font-size:12px; text-decoration:none; }
+  .docs-page-footer a:hover { color:var(--ink); }
+  .docs-toc { padding-left:12px; border-left:1px solid var(--line); }
+  .docs-toc a { padding:5px 7px; font-size:11px; }
+  .docs-toc li.nested a { padding-left:17px; }
+  .docs-mobile-nav { display:none; }
+  .site-footer { display:flex; justify-content:space-between; gap:20px; padding-block:22px; border-top:1px solid var(--line); color:var(--faint); font:11px ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .site-footer div { display:flex; gap:20px; }
+  @media (max-width:1050px) { .docs-grid { grid-template-columns:180px minmax(0,1fr); max-width:1000px; } .docs-toc { display:none; } }
+  @media (max-width:700px) { .site-nav,.docs-grid,.site-footer { width:calc(100% - 36px); } .site-nav { min-height:64px; gap:12px; } .site-nav nav { gap:14px; } .site-nav nav a:first-child { display:none; } .docs-grid { display:grid; grid-template-columns:1fr; gap:14px; padding-block:22px 56px; } .docs-sidebar { display:none; } .docs-mobile-nav { display:block; grid-row:1; border:1px solid var(--line); border-radius:5px; background:var(--paper-raised); } .docs-mobile-nav summary { padding:10px 12px; color:var(--muted); font-size:12px; cursor:pointer; } .docs-mobile-nav nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; padding:12px; border-top:1px solid var(--line); } .docs-mobile-nav nav > a,.docs-mobile-nav nav div a { display:block; padding:3px 0; color:var(--muted); font-size:12px; text-decoration:none; } .docs-mobile-nav nav div strong { display:block; margin-bottom:4px; color:var(--faint); font-size:10px; letter-spacing:.08em; text-transform:uppercase; } .docs-article { grid-row:2; } .docs-prose { min-height:0; font-size:14px; } .docs-breadcrumb { margin-bottom:18px; } .site-footer { width:calc(100% - 36px); } }
+</style>
