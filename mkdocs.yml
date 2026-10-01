@@ -54,7 +54,7 @@ theme:
     edit: material/file-edit-outline
 
 extra_css:
-  - assets/brand.css
+  - assets/brand.css?v=docs-redesign-2
 
 extra:
   social:
