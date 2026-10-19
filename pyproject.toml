@@ -35,7 +35,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "pydantic>=2.13.5",
+    "pydantic>=2.14.1",
     "litellm>=1.102.1,<2.0.0",
 ]
 
