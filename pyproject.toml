@@ -50,7 +50,7 @@ Issues = "https://github.com/sachncs/knowledge/issues"
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=9.1.1",
+    "pytest>=9.2.0",
     "pytest-cov>=7.1.0",
     "ruff>=0.16.9",
     "mypy>=2.3.1",
